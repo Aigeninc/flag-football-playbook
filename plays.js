@@ -273,8 +273,8 @@ const PLAYS = [
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
       Lenox:    { pos: [17.5, 0],  route: [[22, 3], [28, 5]], label: 'CHECK', read: 4, dashed: true },
-      Greyson:  { pos: [4, 0],     route: [[4, 5], [4, 20]], label: 'GO!', read: 1, dashed: false,
-                  fakeSegment: [[4, 0.5], [4, 5]], fakeLabel: 'FAKE HITCH' },
+      Greyson:  { pos: [4, 0],     route: [[4, 5], [4, 4], [3.5, 3.5], [4, 4], [4, 5], [4, 20]], label: 'GO!', read: 1, dashed: false,
+                  fakeSegment: [[4, 0], [4, 5]], fakeLabel: 'FAKE HITCH' },
       Cooper:   { pos: [11, -1],    route: [[11, 5]], label: 'HITCH', read: 2, dashed: false,
                   motion: { from: [31, -1], to: [11, -1] } },
       Marshall: { pos: [17.5, -5.5], route: [[17.5, -3.5], [6, 1]], label: 'FLAT', read: 3, dashed: false },
