@@ -104,8 +104,8 @@ const PLAYS = [
       Braelyn:  { pos: [17.5, -3],   route: [[21, -4]], label: 'HANDOFF', read: 0, dashed: true },
       Lenox:    { pos: [17.5, 0],  route: [[23, 3], [28, 5]], label: 'CHECK', read: 0, dashed: true },
       Greyson:  { pos: [31, 0],    route: [[31, 18]], label: 'GO (decoy)', read: 0, dashed: false },
-      Cooper:   { pos: [17.5, -5.5], route: [[21, -4], [26, -3.5]], label: 'RUN RIGHT', read: 0, dashed: true },
-      Marshall: { pos: [26, -1],     route: [[20, -3], [15, -5], [10, -4], [5, -2], [2, 2], [1, 8], [2, 18]],
+      Marshall: { pos: [17.5, -5.5], route: [[21, -4], [26, -3.5]], label: 'RUN RIGHT', read: 0, dashed: true },
+      Cooper:   { pos: [26, -1],     route: [[20, -3], [15, -5], [10, -4], [5, -2], [2, 2], [1, 8], [2, 18]],
                   label: 'REVERSE!', read: 0, dashed: false,
                   motion: { from: [4, -1], to: [26, -1] } },
     },
@@ -113,12 +113,12 @@ const PLAYS = [
     timing: {},
     ballPath: [
       { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
-      { from: 'Braelyn', to: 'Cooper', time: 0.5, type: 'handoff' },
-      { from: 'Cooper', to: 'Marshall', time: 1.5, type: 'lateral' },
+      { from: 'Braelyn', to: 'Marshall', time: 0.5, type: 'handoff' },
+      { from: 'Marshall', to: 'Cooper', time: 1.5, type: 'lateral' },
     ],
     specialLabels: [
       { x: 15, y: -5, text: 'PITCH', color: '#ff6600' },
-      { x: 3, y: 19, text: '★ BALL CARRIER', color: '#f59e0b' },
+      { x: 3, y: 19, text: '★ BALL CARRIER', color: '#2dd4bf' },
     ],
   },
 
