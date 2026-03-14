@@ -1,6 +1,6 @@
 // modules/editor.js — Play editor: create, edit, and manage custom plays
 
-import { state, FIELD_X_MIN, FIELD_X_MAX, FIELD_Y_MIN, FIELD_Y_MAX, saveCustomPlays } from './state.js';
+import { state, FIELD_X_MIN, FIELD_X_MAX, FIELD_Y_MIN, FIELD_Y_MAX, saveCustomPlays, isValidPlay } from './state.js';
 import { fieldToCanvas, canvasToField, drawFrame } from './renderer.js';
 
 // ── Formation Templates ───────────────────────────────────────
@@ -278,19 +278,32 @@ export function importPlaybook(file) {
         i--;
       }
 
-      // Add imported plays
+      // Add imported plays — P1-4 fix: validate each play before pushing to prevent renderer crashes
+      let skipped = 0;
       data.customPlays.forEach(p => {
+        if (!isValidPlay(p)) {
+          console.warn('Skipping invalid play during import:', p?.name || '(unnamed)');
+          skipped++;
+          return;
+        }
         p.isCustom = true;
         if (!p.id) p.id = 'custom-' + Date.now() + Math.random();
         PLAYS.push(p);
       });
+      if (skipped > 0) {
+        console.warn(`Import: ${skipped} play(s) were skipped due to invalid structure.`);
+      }
 
       saveCustomPlays();
       state.currentPlayIdx = 0;
       if (_buildPlaySelector) _buildPlaySelector();
       if (_updateInfoPanel) _updateInfoPanel();
       drawFrame();
-      alert(`Imported ${count} custom play${count !== 1 ? 's' : ''}!`);
+      const imported = count - skipped;
+      const msg = skipped > 0
+        ? `Imported ${imported} custom play${imported !== 1 ? 's' : ''}.\n(${skipped} skipped — invalid structure)`
+        : `Imported ${imported} custom play${imported !== 1 ? 's' : ''}!`;
+      alert(msg);
     } catch (err) {
       alert('Failed to import: ' + err.message);
     }

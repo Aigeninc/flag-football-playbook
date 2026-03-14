@@ -1,6 +1,6 @@
 // modules/queue.js — Play queue state and rendering
 
-import { state, saveQueueState } from './state.js';
+import { state, saveQueueState, getDisplayNameForPlay } from './state.js';
 
 // selectPlay callback registered from app.js
 let _selectPlay = null;
@@ -11,7 +11,27 @@ export function setBuildPlaySelectorFn(fn) { _buildPlaySelector = fn; }
 
 export function markPlay(result) {
   if (!state.queue.length) return;
-  state.queue[state.queuePos].result = result;
+  const q = state.queue[state.queuePos];
+  q.result = result;
+
+  // P1-2 fix: increment rotation counts when a play is actually run (marked success/fail),
+  // not when the team toggle button is clicked
+  const play = PLAYS[q.playIdx];
+  if (play) {
+    if (!state.rotationCounts) state.rotationCounts = {};
+    for (const origName of Object.keys(play.players)) {
+      const dispName = getDisplayNameForPlay(origName, q.playIdx);
+      state.rotationCounts[dispName] = (state.rotationCounts[dispName] || 0) + 1;
+    }
+    // Persist rotation counts into the lineup storage key
+    try {
+      const raw = localStorage.getItem('playbook:lineup');
+      const data = raw ? JSON.parse(raw) : {};
+      data.rotationCounts = state.rotationCounts;
+      localStorage.setItem('playbook:lineup', JSON.stringify(data));
+    } catch (_e) {}
+  }
+
   saveQueueState();
   renderQueue();
   if (state.queuePos < state.queue.length - 1) advanceQueue(1);

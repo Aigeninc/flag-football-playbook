@@ -161,6 +161,28 @@ export function getDisplayNameForPlay(originalName, playIdx) {
   return originalName;
 }
 
+// ── Play Validation ───────────────────────────────────────────
+
+/**
+ * P1-4 fix: Validate that a play object has the required structure
+ * before adding it to PLAYS. Prevents malformed imports from crashing the renderer.
+ */
+export function isValidPlay(play) {
+  if (!play || typeof play !== 'object') return false;
+  if (!play.name || typeof play.name !== 'string') return false;
+  if (!play.formation || typeof play.formation !== 'string') return false;
+  if (!play.players || typeof play.players !== 'object' || Array.isArray(play.players)) return false;
+  if (!play.defense || !Array.isArray(play.defense)) return false;
+  if (!play.timing || typeof play.timing !== 'object') return false;
+  // Validate each player entry has required pos and route fields
+  for (const pd of Object.values(play.players)) {
+    if (!pd || typeof pd !== 'object') return false;
+    if (!Array.isArray(pd.pos) || pd.pos.length !== 2) return false;
+    if (!Array.isArray(pd.route)) return false;
+  }
+  return true;
+}
+
 // ── Custom Play Storage ───────────────────────────────────────
 
 export function loadCustomPlays() {
@@ -170,6 +192,11 @@ export function loadCustomPlays() {
       const plays = JSON.parse(raw);
       if (Array.isArray(plays)) {
         plays.forEach(p => {
+          // P1-4 fix: validate before pushing to prevent renderer crashes
+          if (!isValidPlay(p)) {
+            console.warn('Skipping invalid custom play from storage:', p?.name || '(unnamed)');
+            return;
+          }
           p.isCustom = true;
           PLAYS.push(p);
         });

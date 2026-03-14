@@ -225,15 +225,33 @@ function getCurrentLineup() {
 function assignToLineup(position, playerName) {
   const lineup = getCurrentLineup();
 
-  // If player is already in a different slot, remove them from there
+  // P1-3 fix: find playerName's current slot (if any) so we can swap instead of losing the displaced player
+  let oldSlot = null;
   for (const [pos, name] of Object.entries(lineup)) {
     if (name === playerName && pos !== position) {
-      lineup[pos] = null;
+      oldSlot = pos;
       break;
     }
   }
 
+  // Who is currently at the target position (will be displaced)?
+  const displacedPlayer = lineup[position];
+
+  // Remove playerName from their old slot
+  if (oldSlot) lineup[oldSlot] = null;
+
+  // Place playerName in target slot
   lineup[position] = playerName;
+
+  // P1-3 fix: move displaced player to playerName's old slot (swap), or bench (null) if playerName was on bench
+  if (displacedPlayer && displacedPlayer !== playerName) {
+    if (oldSlot) {
+      // Swap: displaced player goes to where playerName was
+      lineup[oldSlot] = displacedPlayer;
+    }
+    // If oldSlot is null, playerName came from bench — displaced player simply goes to bench (no lineup entry)
+  }
+
   selectedLineupSlot = null;
 
   saveLineup();
@@ -244,15 +262,8 @@ function assignToLineup(position, playerName) {
 }
 
 function toggleTeam() {
-  // Track how many plays on current lineup before switching
-  const prevLineup = getCurrentLineup();
-  if (!state.rotationCounts) state.rotationCounts = {};
-  Object.values(prevLineup).forEach(name => {
-    if (name) {
-      state.rotationCounts[name] = (state.rotationCounts[name] || 0) + 1;
-    }
-  });
-
+  // P1-2 fix: rotation counts are tracked in queue.js when plays are actually run,
+  // NOT here on every team toggle. Removed incorrect counting from this function.
   state.activeTeam = state.activeTeam === '1' ? '2' : '1';
 
   saveLineup();

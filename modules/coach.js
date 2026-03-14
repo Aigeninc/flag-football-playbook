@@ -36,17 +36,26 @@ export function getPlayScore(playName) {
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
+// P0-2 fix: guard flag so listeners are only added once across all panel toggles
+let _coachListenersInit = false;
+
 export function setupCoachPanel() {
-  document.querySelectorAll('.sit-btn').forEach(btn => {
-    const cat = btn.dataset.sit, val = btn.dataset.val;
-    if (state.situation[cat] === val) btn.classList.add('active');
-    btn.addEventListener('click', () => {
-      const category = btn.dataset.sit, value = btn.dataset.val;
-      state.situation[category] = state.situation[category] === value ? null : value;
-      document.querySelectorAll(`.sit-btn[data-sit="${category}"]`).forEach(b => b.classList.remove('active'));
-      if (state.situation[category]) btn.classList.add('active');
-      updateCoachRecs();
+  if (!_coachListenersInit) {
+    document.querySelectorAll('.sit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const category = btn.dataset.sit, value = btn.dataset.val;
+        state.situation[category] = state.situation[category] === value ? null : value;
+        document.querySelectorAll(`.sit-btn[data-sit="${category}"]`).forEach(b => b.classList.remove('active'));
+        if (state.situation[category]) btn.classList.add('active');
+        updateCoachRecs();
+      });
     });
+    _coachListenersInit = true;
+  }
+
+  // Sync button active states to current situation on every open
+  document.querySelectorAll('.sit-btn').forEach(btn => {
+    btn.classList.toggle('active', state.situation[btn.dataset.sit] === btn.dataset.val);
   });
   updateCoachRecs();
 }
