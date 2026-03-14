@@ -962,26 +962,32 @@
       btn.className = 'player-dot-btn' + (highlightPlayer === origName ? ' active' : '');
       btn.innerHTML = `<span class="dot" style="background:${p.color}${isSub ? ';box-shadow:0 0 4px 2px #fff' : ''}"></span><span class="name">${dispName}${isSub ? '↔' : ''}</span>`;
 
-      // Single tap = highlight filter
+      // Single tap = highlight filter, double-tap = open sub menu
+      let lastTap = 0;
       btn.addEventListener('click', (e) => {
-        highlightPlayer = highlightPlayer === origName ? null : origName;
-        closeSubMenu();
-        buildPlayerFilter();
-        drawFrame();
+        const now = Date.now();
+        if (!isLocked && now - lastTap < 350) {
+          // Double-tap → open sub menu
+          e.preventDefault();
+          highlightPlayer = null;
+          openSubMenu(origName);
+          lastTap = 0;
+          return;
+        }
+        lastTap = now;
+        // Single tap (after short delay to confirm not double)
+        setTimeout(() => {
+          if (lastTap === now) {
+            highlightPlayer = highlightPlayer === origName ? null : origName;
+            closeSubMenu();
+            buildPlayerFilter();
+            drawFrame();
+          }
+        }, 360);
       });
 
-      // Long-press = open sub menu (for non-locked players)
+      // Right-click for desktop
       if (!isLocked) {
-        let pressTimer = null;
-        btn.addEventListener('touchstart', (e) => {
-          pressTimer = setTimeout(() => {
-            e.preventDefault();
-            openSubMenu(origName);
-          }, 500);
-        }, { passive: false });
-        btn.addEventListener('touchend', () => clearTimeout(pressTimer));
-        btn.addEventListener('touchmove', () => clearTimeout(pressTimer));
-        // Right-click for desktop
         btn.addEventListener('contextmenu', (e) => {
           e.preventDefault();
           openSubMenu(origName);
