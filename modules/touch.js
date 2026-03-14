@@ -17,6 +17,7 @@ export function setupTouch() {
   }, { passive: true });
 
   fc.addEventListener('touchend', e => {
+    if (state.editorActive) return; // disable swipe navigation in edit mode
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = e.changedTouches[0].clientY - touchStartY;
     const dt = Date.now() - touchStartTime;
@@ -32,6 +33,7 @@ export function setupTouch() {
 
 export function setupKeyboard() {
   document.addEventListener('keydown', e => {
+    if (state.editorActive) return; // disable shortcuts in edit mode
     if (e.key === 'ArrowRight' && state.currentPlayIdx < PLAYS.length - 1) {
       if (_selectPlay) _selectPlay(state.currentPlayIdx + 1);
     } else if (e.key === 'ArrowLeft' && state.currentPlayIdx > 0) {

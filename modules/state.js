@@ -36,6 +36,15 @@ export const state = {
   queueMode: false,
   queue: [],           // [{ playIdx, result: null|'success'|'fail' }]
   queuePos: 0,
+
+  // ── Editor state ─────────────────────────────────────────
+  editorActive: false,
+  editorPlay: null,          // deep copy of play being edited
+  editorPlayIdx: null,       // index in PLAYS array, or -1 for new
+  editorIsNew: false,        // true = will push new play on save
+  editorSelectedPlayer: null,// player name key
+  editorSelectedWaypoint: null, // { playerName, waypointIndex } | null
+  editorUndoStack: [],       // array of editorPlay snapshots
 };
 
 // ── Pure helpers ─────────────────────────────────────────────
@@ -75,6 +84,32 @@ export function getAvailableSubs(targetOriginal) {
     !onField.includes(name) &&
     name !== currentHolder
   );
+}
+
+// ── Custom Play Storage ───────────────────────────────────────
+
+export function loadCustomPlays() {
+  try {
+    const raw = localStorage.getItem('playbook:customPlays');
+    if (raw) {
+      const plays = JSON.parse(raw);
+      if (Array.isArray(plays)) {
+        plays.forEach(p => {
+          p.isCustom = true;
+          PLAYS.push(p);
+        });
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load custom plays:', e);
+  }
+}
+
+export function saveCustomPlays() {
+  try {
+    const customPlays = PLAYS.filter(p => p.isCustom);
+    localStorage.setItem('playbook:customPlays', JSON.stringify(customPlays));
+  } catch (e) {}
 }
 
 // ── localStorage helpers ──────────────────────────────────────

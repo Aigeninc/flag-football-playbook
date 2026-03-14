@@ -29,6 +29,12 @@ export function fieldToCanvas(fx, fy) {
   return [cx, cy];
 }
 
+export function canvasToField(cx, cy) {
+  const fx = FIELD_X_MIN + ((cx - fieldRect.x) / fieldRect.w) * (FIELD_X_MAX - FIELD_X_MIN);
+  const fy = FIELD_Y_MAX - ((cy - fieldRect.y) / fieldRect.h) * (FIELD_Y_MAX - FIELD_Y_MIN);
+  return [fx, fy];
+}
+
 export function scaleLen(yards) {
   return (yards / (FIELD_X_MAX - FIELD_X_MIN)) * fieldRect.w;
 }
@@ -62,6 +68,20 @@ export function drawFrame() {
   const w = canvas.width / (window.devicePixelRatio || 1);
   const h = canvas.height / (window.devicePixelRatio || 1);
   ctx.clearRect(0, 0, w, h);
+
+  if (state.editorActive && state.editorPlay) {
+    // Edit mode — draw static editor view
+    const play = state.editorPlay;
+    drawField(play);
+    drawDefense(play);
+    drawEditRoutes(play);
+    drawEditPlayers(play);
+    drawEditWaypointHandles(play);
+    drawEditSelectionRing();
+    drawEditHint();
+    return;
+  }
+
   const play = PLAYS[state.currentPlayIdx];
   drawField(play);
   drawDefense(play);
@@ -71,6 +91,143 @@ export function drawFrame() {
   drawBall(play);
   drawSpecialLabels(play);
   drawSnapIndicator(play);
+}
+
+// ── Edit Mode Rendering ───────────────────────────────────────
+
+function drawEditRoutes(play) {
+  for (const [name, pd] of Object.entries(play.players)) {
+    const isSelected = state.editorSelectedPlayer === name;
+    const color = getPlayerColor(name);
+    const alpha = (state.editorSelectedPlayer && !isSelected) ? 0.45 : 1.0;
+    if (!pd.route || !pd.route.length) continue;
+
+    ctx.globalAlpha = alpha;
+    const fullPath = [pd.pos, ...pd.route];
+    ctx.beginPath();
+    const [sx, sy] = fieldToCanvas(fullPath[0][0], fullPath[0][1]);
+    ctx.moveTo(sx, sy);
+    for (let i = 1; i < fullPath.length; i++) {
+      const [cx2, cy2] = fieldToCanvas(fullPath[i][0], fullPath[i][1]);
+      ctx.lineTo(cx2, cy2);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = pd.dashed ? 3 : 4.5;
+    if (pd.dashed) ctx.setLineDash([8, 5]);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Arrowhead
+    if (fullPath.length >= 2) {
+      const last = fullPath[fullPath.length - 1];
+      const prev = fullPath[fullPath.length - 2];
+      const [lx, ly] = fieldToCanvas(last[0], last[1]);
+      const [px, py] = fieldToCanvas(prev[0], prev[1]);
+      drawArrowhead(lx, ly, Math.atan2(ly - py, lx - px), color, 12);
+    }
+
+    // Route label at end
+    if (pd.label) {
+      const last = pd.route[pd.route.length - 1];
+      const [lx, ly] = fieldToCanvas(last[0], last[1]);
+      drawLabel(lx + 8, ly - 8, pd.label, color, alpha);
+    }
+
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawEditPlayers(play) {
+  for (const [name, pd] of Object.entries(play.players)) {
+    const isSelected = state.editorSelectedPlayer === name;
+    const color = getPlayerColor(name);
+    const [cx, cy] = fieldToCanvas(pd.pos[0], pd.pos[1]);
+    const r = 15;
+
+    ctx.globalAlpha = (state.editorSelectedPlayer && !isSelected) ? 0.5 : 1;
+
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = color; ctx.fill();
+    ctx.strokeStyle = isSelected ? '#fff' : 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = isSelected ? 3 : 2;
+    ctx.stroke();
+
+    const tc = (color === '#2dd4bf' || color === '#f59e0b' || color === '#f5d742') ? '#000' : '#fff';
+    ctx.fillStyle = tc;
+    ctx.font = 'bold 9px system-ui';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(name.substring(0, 7), cx, cy);
+
+    // Read order badge
+    if (pd.read > 0) {
+      const syms = ['①', '②', '③', '④'];
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(cx - 14, cy + 14, 9, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#000'; ctx.font = 'bold 9px system-ui';
+      ctx.fillText(syms[pd.read - 1] || pd.read, cx - 14, cy + 14);
+    }
+
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawEditWaypointHandles(play) {
+  for (const [name, pd] of Object.entries(play.players)) {
+    if (!pd.route || !pd.route.length) continue;
+    const isSelected = state.editorSelectedPlayer === name;
+    const color = getPlayerColor(name);
+
+    for (let i = 0; i < pd.route.length; i++) {
+      const [cx, cy] = fieldToCanvas(pd.route[i][0], pd.route[i][1]);
+      const isWpSelected = state.editorSelectedWaypoint?.playerName === name &&
+                           state.editorSelectedWaypoint?.waypointIndex === i;
+
+      ctx.globalAlpha = isSelected ? 1.0 : 0.5;
+      ctx.beginPath(); ctx.arc(cx, cy, isWpSelected ? 10 : 7, 0, Math.PI * 2);
+      ctx.fillStyle = isWpSelected ? '#fff' : color;
+      ctx.strokeStyle = isWpSelected ? color : '#fff';
+      ctx.lineWidth = 2;
+      ctx.fill(); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+function drawEditSelectionRing() {
+  if (!state.editorSelectedPlayer || !state.editorPlay) return;
+  const pd = state.editorPlay.players[state.editorSelectedPlayer];
+  if (!pd) return;
+  const [cx, cy] = fieldToCanvas(pd.pos[0], pd.pos[1]);
+  const color = getPlayerColor(state.editorSelectedPlayer);
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawEditHint() {
+  const cw = canvas.width / (window.devicePixelRatio || 1);
+  ctx.save();
+  ctx.globalAlpha = 0.6;
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  roundRect(ctx, cw / 2 - 100, fieldRect.y + fieldRect.h - 28, 200, 22, 6);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = '10px system-ui';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (state.editorSelectedPlayer) {
+    ctx.fillText('Tap field → add waypoint  |  Drag → move  |  Hold waypoint → delete', cw / 2, fieldRect.y + fieldRect.h - 17);
+  } else {
+    ctx.fillText('Tap a player to select  •  Drag to move', cw / 2, fieldRect.y + fieldRect.h - 17);
+  }
+  ctx.restore();
 }
 
 // ── Field ─────────────────────────────────────────────────────

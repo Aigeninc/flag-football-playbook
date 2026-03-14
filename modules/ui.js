@@ -20,9 +20,12 @@ export function buildPlaySelector() {
   PLAYS.forEach((play, i) => {
     const hasSubs = state.substitutions[i] && Object.keys(state.substitutions[i]).length > 0;
     const btn = document.createElement('button');
-    btn.className = 'play-btn' + (i === state.currentPlayIdx ? ' active' : '');
-    btn.textContent = play.name + (hasSubs ? ' ↔' : '');
+    let cls = 'play-btn' + (i === state.currentPlayIdx ? ' active' : '');
+    if (play.isCustom) cls += ' custom';
+    btn.className = cls;
+    btn.textContent = play.name + (hasSubs ? ' ↔' : '') + (play.isCustom ? ' ★' : '');
     btn.addEventListener('click', () => {
+      if (state.editorActive) return; // don't switch plays while editing
       if (state.queueMode) {
         state.queue.push({ playIdx: i, result: null });
         state.queuePos = state.queue.length - 1;

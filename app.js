@@ -2,7 +2,7 @@
 // PLAYS and PLAYERS are globals loaded from plays.js (regular script)
 
 import {
-  state, getAnimStart, loadQueueState, loadPreferences,
+  state, getAnimStart, loadQueueState, loadPreferences, loadCustomPlays,
 } from './modules/state.js';
 
 import {
@@ -34,6 +34,11 @@ import {
   setupTouch, setupKeyboard,
   setSelectPlayFn as touchSetSelectPlay,
 } from './modules/touch.js';
+
+import {
+  buildEditToolbar, setupEditorCanvasEvents,
+  setEditorCallbacks, handleEditToggle,
+} from './modules/editor.js';
 
 // ── selectPlay — central navigation function ──────────────────
 
@@ -101,12 +106,23 @@ function setupPanelToggles() {
   });
 }
 
+// ── Edit button ───────────────────────────────────────────────
+
+function setupEditButton() {
+  const editBtn = document.getElementById('btn-edit');
+  if (!editBtn) return;
+  editBtn.addEventListener('click', () => {
+    handleEditToggle();
+  });
+}
+
 // ── Init ──────────────────────────────────────────────────────
 
 function init() {
   // Load saved preferences before rendering
   loadPreferences();
   loadQueueState();
+  loadCustomPlays(); // Load custom plays from localStorage into PLAYS array
 
   // Wire up selectPlay callbacks in each module
   uiSetSelectPlay(selectPlay);
@@ -125,6 +141,13 @@ function init() {
   }
 
   initCanvas();
+
+  // Wire up editor callbacks
+  setEditorCallbacks(buildPlaySelector, updateInfoPanel, selectPlay);
+  buildEditToolbar();
+  setupEditorCanvasEvents(document.getElementById('field-canvas'));
+  setupEditButton();
+
   buildPlaySelector();
   buildPlayerFilter();
   buildControls();
