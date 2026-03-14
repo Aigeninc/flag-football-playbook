@@ -76,7 +76,7 @@
   // ── Field coordinate mapping ─────────────────────────────
   // Play coords: X=[0,35], Y=[-8, 24] (LOS at 0, positive = downfield)
   const FIELD_X_MIN = 0, FIELD_X_MAX = 35;
-  const FIELD_Y_MIN = -8, FIELD_Y_MAX = 18;
+  const FIELD_Y_MIN = -10, FIELD_Y_MAX = 18;
   let canvas, ctx;
   let fieldRect = { x: 0, y: 0, w: 0, h: 0 };
 
@@ -187,13 +187,7 @@
     ctx.textAlign = 'right';
     ctx.fillText('LOS', fieldRect.x - 3, losCy);
 
-    // Center label on the line
-    ctx.font = 'bold 10px system-ui';
-    ctx.textAlign = 'center';
-    ctx.globalAlpha = 0.6;
-    ctx.fillStyle = '#f5d742';
-    ctx.fillText('— LINE OF SCRIMMAGE —', fieldRect.x + fieldRect.w / 2, losCy - 8);
-    ctx.globalAlpha = 1;
+    // No center text — it overlaps with player names at LOS
 
     // NRZ overlay
     if (play.showNRZ) {
