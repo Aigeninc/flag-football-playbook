@@ -13,6 +13,45 @@
   let viewMode = 'qb'; // 'qb' = staggered reads (study), 'game' = all routes simultaneous
   let defenseMode = 'off'; // 'off' = static gray, 'man' = follow receivers, 'zone' = shift to zones
 
+  // Substitution state: per-play mapping of original player name → replacement name
+  // e.g., { 3: { 'Cooper': 'Jordy' } } means on play index 3, Jordy replaces Cooper
+  let substitutions = {}; // { playIdx: { originalName: replacementName } }
+  let subMenuOpen = false;
+  let subMenuTarget = null; // player name being subbed out
+
+  const LOCKED_PLAYERS = ['Braelyn', 'Lenox']; // Can't be subbed out
+  const ALL_ROSTER = ['Braelyn', 'Lenox', 'Greyson', 'Marshall', 'Cooper', 'Jordy', 'Zeke'];
+
+  function getActiveSubs() {
+    return substitutions[currentPlayIdx] || {};
+  }
+
+  function getDisplayName(originalName) {
+    const subs = getActiveSubs();
+    return subs[originalName] || originalName;
+  }
+
+  function getActiveRoster() {
+    // Returns the current 5 on the field for this play (after subs)
+    const subs = getActiveSubs();
+    const play = PLAYS[currentPlayIdx];
+    const onField = [];
+    for (const origName of Object.keys(play.players)) {
+      onField.push(subs[origName] || origName);
+    }
+    return onField;
+  }
+
+  function getAvailableSubs(targetOriginal) {
+    // Who can replace this player? Anyone not already on the field
+    const onField = getActiveRoster();
+    return ALL_ROSTER.filter(name =>
+      !LOCKED_PLAYERS.includes(name) &&
+      !onField.includes(name) &&
+      name !== targetOriginal
+    );
+  }
+
   const TOTAL_TIME = 7.0;     // pass clock (post-snap)
   const ANIM_ROUTE_DURATION = 1.2; // seconds to draw a single route
   const PRE_SNAP_MOTION = 1.5;  // seconds for motion animation
@@ -355,7 +394,7 @@
         ctx.font = 'bold 8px system-ui';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(name.substring(0, 7), currentX, currentY);
+        ctx.fillText(getPlayerDisplayName(name).substring(0, 7), currentX, currentY);
       }
 
       // MOTION label
@@ -372,7 +411,13 @@
   }
 
   function getPlayerColor(name) {
-    return PLAYERS[name] ? PLAYERS[name].color : '#fff';
+    // If this is an original player name, check if they've been subbed
+    const displayName = getDisplayName(name);
+    return PLAYERS[displayName] ? PLAYERS[displayName].color : '#fff';
+  }
+
+  function getPlayerDisplayName(origName) {
+    return getDisplayName(origName);
   }
 
   function getRouteStartTime(play, read) {
@@ -656,21 +701,22 @@
       ctx.globalAlpha = ghosted ? 0.2 : 1;
 
       // Dot
+      const dispName = getPlayerDisplayName(name);
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.fillStyle = color;
       ctx.fill();
-      ctx.strokeStyle = (PLAYERS[name] && PLAYERS[name].border) || '#fff';
+      ctx.strokeStyle = (PLAYERS[dispName] && PLAYERS[dispName].border) || '#fff';
       ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // Name
+      // Name (show the substituted player's name)
       const tc = (color === '#2dd4bf' || color === '#f59e0b' || color === '#f5d742') ? '#000' : '#fff';
       ctx.fillStyle = tc;
       ctx.font = 'bold 8px system-ui';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(name.substring(0, 7), cx, cy);
+      ctx.fillText(dispName.substring(0, 7), cx, cy);
 
       ctx.globalAlpha = 1;
     }
@@ -891,8 +937,9 @@
     container.innerHTML = '';
     PLAYS.forEach((play, i) => {
       const btn = document.createElement('button');
+      const hasSubs = substitutions[i] && Object.keys(substitutions[i]).length > 0;
       btn.className = 'play-btn' + (i === currentPlayIdx ? ' active' : '');
-      btn.textContent = play.name;
+      btn.textContent = play.name + (hasSubs ? ' ↔' : '');
       btn.addEventListener('click', () => selectPlay(i));
       container.appendChild(btn);
     });
@@ -901,21 +948,119 @@
   function buildPlayerFilter() {
     const container = document.getElementById('player-filter');
     container.innerHTML = '';
-    // Only show the 5 starters for each play
     const play = PLAYS[currentPlayIdx];
-    for (const name of Object.keys(play.players)) {
-      const p = PLAYERS[name];
+    const subs = getActiveSubs();
+
+    for (const origName of Object.keys(play.players)) {
+      const dispName = subs[origName] || origName;
+      const p = PLAYERS[dispName];
       if (!p) continue;
+      const isLocked = LOCKED_PLAYERS.includes(origName);
+      const isSub = dispName !== origName;
+
       const btn = document.createElement('button');
-      btn.className = 'player-dot-btn' + (highlightPlayer === name ? ' active' : '');
-      btn.innerHTML = `<span class="dot" style="background:${p.color}"></span><span class="name">${name}</span>`;
-      btn.addEventListener('click', () => {
-        highlightPlayer = highlightPlayer === name ? null : name;
+      btn.className = 'player-dot-btn' + (highlightPlayer === origName ? ' active' : '');
+      btn.innerHTML = `<span class="dot" style="background:${p.color}${isSub ? ';box-shadow:0 0 4px 2px #fff' : ''}"></span><span class="name">${dispName}${isSub ? '↔' : ''}</span>`;
+
+      // Single tap = highlight filter
+      btn.addEventListener('click', (e) => {
+        highlightPlayer = highlightPlayer === origName ? null : origName;
+        closeSubMenu();
         buildPlayerFilter();
         drawFrame();
       });
+
+      // Long-press = open sub menu (for non-locked players)
+      if (!isLocked) {
+        let pressTimer = null;
+        btn.addEventListener('touchstart', (e) => {
+          pressTimer = setTimeout(() => {
+            e.preventDefault();
+            openSubMenu(origName);
+          }, 500);
+        }, { passive: false });
+        btn.addEventListener('touchend', () => clearTimeout(pressTimer));
+        btn.addEventListener('touchmove', () => clearTimeout(pressTimer));
+        // Right-click for desktop
+        btn.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          openSubMenu(origName);
+        });
+      }
+
       container.appendChild(btn);
     }
+
+    // Show sub indicator if this play has subs
+    if (Object.keys(subs).length > 0) {
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'player-dot-btn';
+      resetBtn.innerHTML = '<span class="name" style="font-size:11px">↩ Reset</span>';
+      resetBtn.style.opacity = '0.7';
+      resetBtn.addEventListener('click', () => {
+        delete substitutions[currentPlayIdx];
+        closeSubMenu();
+        buildPlayerFilter();
+        drawFrame();
+        buildPlaySelector(); // update sub indicator on play button
+      });
+      container.appendChild(resetBtn);
+    }
+  }
+
+  function openSubMenu(targetOrigName) {
+    closeSubMenu();
+    subMenuTarget = targetOrigName;
+    const available = getAvailableSubs(targetOrigName);
+    if (available.length === 0) return;
+
+    const menu = document.createElement('div');
+    menu.id = 'sub-menu';
+    menu.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:#1a1a2e;border:2px solid #f59e0b;border-radius:12px;padding:8px;display:flex;gap:8px;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
+
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = 'color:#f59e0b;font-size:11px;font-weight:bold;padding:4px 8px;white-space:nowrap;display:flex;align-items:center;';
+    const dispName = getDisplayName(targetOrigName);
+    header.textContent = `SUB ${dispName}:`;
+    menu.appendChild(header);
+
+    for (const subName of available) {
+      const p = PLAYERS[subName];
+      const btn = document.createElement('button');
+      btn.style.cssText = `background:${p.color};color:${(p.color === '#2dd4bf' || p.color === '#f59e0b') ? '#000' : '#fff'};border:2px solid #fff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:bold;min-width:44px;min-height:44px;cursor:pointer;`;
+      btn.textContent = subName;
+      btn.addEventListener('click', () => {
+        makeSub(targetOrigName, subName);
+      });
+      menu.appendChild(btn);
+    }
+
+    // Cancel
+    const cancelBtn = document.createElement('button');
+    cancelBtn.style.cssText = 'background:#333;color:#fff;border:1px solid #666;border-radius:8px;padding:6px 10px;font-size:12px;min-height:44px;cursor:pointer;';
+    cancelBtn.textContent = '✕';
+    cancelBtn.addEventListener('click', closeSubMenu);
+    menu.appendChild(cancelBtn);
+
+    document.body.appendChild(menu);
+    subMenuOpen = true;
+  }
+
+  function closeSubMenu() {
+    const menu = document.getElementById('sub-menu');
+    if (menu) menu.remove();
+    subMenuOpen = false;
+    subMenuTarget = null;
+  }
+
+  function makeSub(origName, replacementName) {
+    if (!substitutions[currentPlayIdx]) substitutions[currentPlayIdx] = {};
+    substitutions[currentPlayIdx][origName] = replacementName;
+    closeSubMenu();
+    buildPlayerFilter();
+    buildPlaySelector(); // update sub indicator
+    drawFrame();
   }
 
   function buildControls() {
