@@ -333,6 +333,7 @@ function getDefenderPosition(play, defIdx, defStart) {
 }
 
 function drawDefense(play) {
+  if (state.defenseMode === 'off') return; // Skip rendering entirely when defense is off
   for (let i = 0; i < play.defense.length; i++) {
     const [startX, startY] = play.defense[i];
     const [dx, dy] = getDefenderPosition(play, i, [startX, startY]);
