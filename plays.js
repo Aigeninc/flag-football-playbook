@@ -1,4 +1,4 @@
-// plays.js — All 13 flag football plays
+// plays.js — 16 flag football plays (13 base + 3 mirror/counter plays)
 // Coordinates: X = 0-35 (sideline to sideline), Y = negative behind LOS, positive downfield
 // LOS is at Y=0
 
@@ -39,28 +39,32 @@ const PLAYS = [
     ],
   },
 
-  // ── 2. QUICK OUT ───────────────────────────────────────────────────────
+  // ── 2. FLOOD FAKE (replaces Quick Out) ──────────────────────────────────
+  // MIRROR OF: Flood Right — identical formation + first 1 sec, then Cooper burns deep
   {
-    name: 'Quick Out',
-    formation: 'Spread',
+    name: 'Flood Fake',
+    formation: 'Twins Right',
     whenToUse: [
-      'Rush pressure — get rid of it FAST',
-      'Need quick 5 yards',
-      'Emergency dump-off play'
+      'After running Flood Right 2-3 times — defense cheats right',
+      'Need a big play — Cooper deep post',
+      'Defense is jumping the flat/corner combo'
     ],
-    notes: 'SUB: Jordy can replace Greyson at RB (flat)',
+    notes: 'LOOKS LIKE Flood Right for 1 sec! Cooper fakes flat then burns deep. MIRROR PLAY.',
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
-      Lenox:    { pos: [17.5, 0],  route: [[22, 3], [28, 5]], label: 'CHECK', read: 4, dashed: true },
-      Marshall: { pos: [4, 0],     route: [[4, 5], [0.5, 5]], label: 'OUT', read: 1, dashed: false },
-      Cooper:   { pos: [31, 0],    route: [[31, 2], [23, 7]], label: 'SLANT', read: 2, dashed: false },
-      Greyson:  { pos: [17.5, -5.5], route: [[17.5, -3.5], [30, 2]], label: 'FLAT', read: 3, dashed: false },
+      Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 4, dashed: true },
+      Greyson:  { pos: [27, 0],    route: [[27, 6], [33, 16]], label: 'CORNER', read: 2, dashed: false },
+      Marshall: { pos: [32, 0],    route: [[32, 8], [34, 8]], label: 'OUT', read: 3, dashed: false },
+      Cooper:   { pos: [17.5, -5.5], route: [[22, -2], [30, 1], [25, 6], [17.5, 14]], label: 'POST!', read: 1, dashed: false },
     },
-    defense: [[10, 4], [17.5, 7], [25, 4], [7, 11], [28, 11]],
-    timing: { 1: 0.8, 2: 1.5, 3: 2.5, 4: 3.5 },
+    defense: [[8, 7], [17, 7], [26, 5], [10, 14], [28, 12]],
+    timing: { 1: 2.0, 2: 1.0, 3: 2.5, 4: 4.0 },
     ballPath: [
       { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
-      { from: 'Braelyn', to: 'Marshall', time: 0.8, type: 'throw' },
+      { from: 'Braelyn', to: 'Cooper', time: 2.0, type: 'throw' },
+    ],
+    specialLabels: [
+      { x: 17.5, y: 16, text: '★ WIDE OPEN\nDEFENSE CHEATED RIGHT', color: '#2dd4bf' },
     ],
   },
 
@@ -316,31 +320,35 @@ const PLAYS = [
     ],
   },
 
-  // ── 12. DRAG CROSS ─────────────────────────────────────────────────────
+  // ── 12. REVERSE FAKE (replaces Drag Cross) ──────────────────────────────
+  // MIRROR OF: Reverse — same formation + motion, NO handoff, hit vacated side
   {
-    name: 'Drag Cross',
+    name: 'Reverse Fake',
     formation: 'Spread',
     whenToUse: [
-      'Defense playing tight outside — fake pulls DBs wide',
-      'Man coverage — drags create natural picks underneath',
-      'Complement to Mesh — different look, same crossing concept'
+      'After running Reverse 1-2 times — defense crashes on motion',
+      'Defense chasing Cooper across — leave the other side empty',
+      'Need chunk yardage from misdirection'
     ],
-    notes: 'SUB: Jordy can replace Marshall at RB (flat)',
+    notes: 'LOOKS LIKE Reverse! Same motion. Braelyn pump fakes handoff, hits Greyson slant.',
     players: {
-      Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
-      Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 4, dashed: true },
-      Greyson:  { pos: [24, -1],    route: [[28, 2], [24, 4], [3, 4]], label: 'DRAG', read: 1, dashed: false,
-                  fakeSegment: [[24, 0.5], [28, 2]], fakeLabel: 'FAKE OUT',
-                  motion: { from: [4, -1], to: [24, -1] } },
-      Cooper:   { pos: [31, 0],    route: [[33, 2], [31, 6], [3, 6]], label: 'DRAG', read: 2, dashed: false,
-                  fakeSegment: [[31, 0.5], [33, 2]], fakeLabel: 'FAKE OUT' },
-      Marshall: { pos: [17.5, -5.5], route: [[17.5, -3.5], [6, 1]], label: 'FLAT', read: 3, dashed: false },
+      Braelyn:  { pos: [17.5, -3],   route: [], label: 'PUMP FAKE', read: 0, dashed: false },
+      Lenox:    { pos: [17.5, 0],  route: [[23, 3], [28, 5]], label: 'CHECK', read: 3, dashed: true },
+      Greyson:  { pos: [31, 0],    route: [[31, 3], [23, 8]], label: 'SLANT!', read: 1, dashed: false },
+      Marshall: { pos: [17.5, -5.5], route: [[21, -4], [26, -3.5]], label: 'FAKE RUN', read: 0, dashed: true },
+      Cooper:   { pos: [26, -1],     route: [[20, -3], [15, -4], [10, -3], [5, 1], [3, 5]],
+                  label: 'FAKE REVERSE', read: 2, dashed: true,
+                  motion: { from: [4, -1], to: [26, -1] } },
     },
-    defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
-    timing: { 1: 1.5, 2: 2.0, 3: 3.0, 4: 4.0 },
+    defense: [[10, 5], [17.5, 7], [25, 5], [7, 12], [28, 12]],
+    timing: { 1: 1.5, 2: 2.5, 3: 3.0, 4: 4.0 },
     ballPath: [
       { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
       { from: 'Braelyn', to: 'Greyson', time: 1.5, type: 'throw' },
+    ],
+    specialLabels: [
+      { x: 17.5, y: -5, text: 'FAKE HANDOFF', color: '#ff6600' },
+      { x: 23, y: 10, text: '★ DEFENSE CRASHES LEFT\nGREYSON WIDE OPEN RIGHT', color: '#dc2626' },
     ],
   },
 
@@ -370,6 +378,98 @@ const PLAYS = [
     ],
     specialLabels: [
       { x: 34, y: 16, text: '★ TALLEST KID\nBACK CORNER', color: '#f59e0b' },
+    ],
+  },
+
+  // ── 14. MESH WHEEL ─────────────────────────────────────────────────────
+  // MIRROR OF: Mesh — same motion from Cooper, but Cooper wheels deep instead of crossing
+  {
+    name: 'Mesh Wheel',
+    formation: 'Spread',
+    whenToUse: [
+      'After running Mesh 2-3 times — DB expects crossing route',
+      'Defense jumping the mesh crossing — Cooper fakes cross, wheels deep',
+      'Need a big play off a familiar look'
+    ],
+    notes: 'LOOKS LIKE Mesh! Cooper fakes the cross, wheels up sideline. DB bites inside = TD.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
+      Lenox:    { pos: [17.5, 0],  route: [[22, 3], [27, 5]], label: 'CHECK', read: 4, dashed: true },
+      Greyson:  { pos: [4, 0],     route: [[4, 5], [32, 5]], label: 'MESH', read: 2, dashed: false },
+      Cooper:   { pos: [24, -1],    route: [[24, 3], [22, 4], [23, 5], [24, 6], [26, 10], [27, 16]], label: 'WHEEL!', read: 1, dashed: false,
+                  motion: { from: [31, -1], to: [24, -1] } },
+      Marshall: { pos: [17.5, -5.5], route: [[17.5, -3.5], [6, 1]], label: 'FLAT', read: 3, dashed: false },
+    },
+    defense: [[10, 5], [17.5, 8], [25, 5], [8, 13], [27, 13]],
+    timing: { 1: 2.5, 2: 1.5, 3: 3.0, 4: 4.0 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Cooper', time: 2.5, type: 'throw' },
+    ],
+    specialLabels: [
+      { x: 22, y: 4, text: 'FAKE CROSS', color: '#2dd4bf' },
+      { x: 27, y: 17, text: '★ DB BITES INSIDE\nCOOPER GONE', color: '#2dd4bf' },
+    ],
+  },
+
+  // ── 15. SLANT & GO ─────────────────────────────────────────────────────
+  // MIRROR OF: Quick Slants NRZ — same formation, Greyson fakes slant then goes deep
+  {
+    name: 'Slant & Go',
+    formation: 'Spread',
+    whenToUse: [
+      'After running Quick Slants — DB jumping the slant inside',
+      'Defense cheating inside on slant routes',
+      'Need a deep shot from a familiar look'
+    ],
+    notes: 'LOOKS LIKE Quick Slants! Greyson fakes slant at 3yd then explodes deep outside. COUNTER PLAY.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
+      Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 4, dashed: true },
+      Greyson:  { pos: [4, 0],     route: [[4, 2], [8, 3], [6, 4], [4, 5], [2, 10], [1, 16]], label: 'GO!', read: 1, dashed: false },
+      Marshall: { pos: [31, 0],    route: [[31, 2], [23, 5]], label: 'SLANT', read: 2, dashed: false },
+      Cooper:   { pos: [17.5, -5.5], route: [[17.5, -3.5], [28, 1]], label: 'FLAT', read: 3, dashed: false },
+    },
+    defense: [[10, 4], [17.5, 6], [25, 4], [8, 9], [27, 9]],
+    timing: { 1: 2.5, 2: 1.0, 3: 2.0, 4: 3.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 2.5, type: 'throw' },
+    ],
+    specialLabels: [
+      { x: 8, y: 3, text: 'FAKE SLANT', color: '#dc2626' },
+      { x: 1, y: 17, text: '★ DB BITES SLANT\nGREYSON GONE', color: '#dc2626' },
+    ],
+  },
+
+  // ── 16. SCREEN FAKE POST ───────────────────────────────────────────────
+  // MIRROR OF: Screen — same formation + pump fake, but instead of dumping short, go deep
+  {
+    name: 'Screen Fake Post',
+    formation: 'Spread',
+    whenToUse: [
+      'After running Screen — defense crashes on Cooper',
+      'Defense selling out to stop the screen',
+      'Need the big play — Greyson/Marshall wide open deep'
+    ],
+    notes: 'LOOKS LIKE Screen! Pump fake, but Greyson runs a real post. Defense crashes screen = TD.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [], label: 'PUMP FAKE', read: 0, dashed: false },
+      Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 3, dashed: true },
+      Greyson:  { pos: [4, 0],     route: [[4, 6], [12, 14]], label: 'POST!', read: 1, dashed: false },
+      Marshall: { pos: [31, 0],    route: [[31, 6], [28, 14]], label: 'POST', read: 2, dashed: false },
+      Cooper:   { pos: [24, -4],     route: [[24, -3], [28, -1], [33, 3]], label: 'SCREEN (decoy)', read: 0, dashed: true,
+                  motion: { from: [17.5, -5.5], to: [24, -4] }, delay: 1.0 },
+    },
+    defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
+    timing: { 1: 2.5, 2: 2.5, 3: 3.5, 4: 4.0 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 2.5, type: 'throw' },
+    ],
+    specialLabels: [
+      { x: 19.5, y: -1, text: 'PUMP FAKE\n(sell screen)', color: '#1a1a1a' },
+      { x: 12, y: 16, text: '★ DEFENSE CRASHES SCREEN\nGREYSON WIDE OPEN', color: '#dc2626' },
     ],
   },
 ];
