@@ -483,11 +483,64 @@
     ctx.restore();
   }
 
+  function getPlayerPosition(play, name, pd) {
+    // During pre-snap motion, moving players are handled in drawMotions
+    // After snap, player dot moves along route based on animation time
+    if (!pd.route || pd.route.length === 0 || animTime <= 0) {
+      return pd.pos; // At starting position
+    }
+
+    const routeStart = getRouteStartTime(play, pd.read);
+    const routeEnd = routeStart + ANIM_ROUTE_DURATION;
+
+    if (animTime < routeStart) return pd.pos;
+
+    const progress = Math.min(1, (animTime - routeStart) / ANIM_ROUTE_DURATION);
+    const fullPath = [pd.pos, ...pd.route];
+
+    // Calculate total path length
+    let totalLen = 0;
+    const segLens = [];
+    for (let i = 1; i < fullPath.length; i++) {
+      const dx = fullPath[i][0] - fullPath[i-1][0];
+      const dy = fullPath[i][1] - fullPath[i-1][1];
+      const sl = Math.sqrt(dx*dx + dy*dy);
+      segLens.push(sl);
+      totalLen += sl;
+    }
+
+    const targetLen = totalLen * progress;
+    let accumulated = 0;
+
+    for (let i = 1; i < fullPath.length; i++) {
+      if (accumulated + segLens[i-1] >= targetLen) {
+        const remain = targetLen - accumulated;
+        const frac = remain / segLens[i-1];
+        const x = fullPath[i-1][0] + (fullPath[i][0] - fullPath[i-1][0]) * frac;
+        const y = fullPath[i-1][1] + (fullPath[i][1] - fullPath[i-1][1]) * frac;
+        return [x, y];
+      }
+      accumulated += segLens[i-1];
+    }
+
+    return pd.route[pd.route.length - 1]; // At end of route
+  }
+
   function drawPlayers(play) {
     for (const [name, pd] of Object.entries(play.players)) {
       const ghosted = highlightPlayer && highlightPlayer !== name;
       const color = getPlayerColor(name);
-      const [cx, cy] = fieldToCanvas(pd.pos[0], pd.pos[1]);
+
+      // Skip drawing motion players during motion phase (drawMotions handles them)
+      if (pd.motion && animTime < -SET_PAUSE) {
+        // Motion phase — the moving dot is drawn in drawMotions
+        // Only draw the player if they're NOT the one in motion
+        continue;
+      }
+
+      // Get current position (moves along route after snap)
+      const currentPos = getPlayerPosition(play, name, pd);
+      const [cx, cy] = fieldToCanvas(currentPos[0], currentPos[1]);
       const r = 15;
 
       ctx.globalAlpha = ghosted ? 0.2 : 1;
