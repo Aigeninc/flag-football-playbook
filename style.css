@@ -405,3 +405,85 @@ html, body {
 .queue-btn.queue-success { background: #166534; border-color: #22c55e; }
 .queue-btn.queue-fail { background: #7f1d1d; border-color: #ef4444; }
 .queue-btn.queue-clear { font-size: 14px; opacity: 0.6; }
+
+/* Coach Call Sheet */
+#coach-panel {
+  background: var(--surface);
+  border-top: 2px solid #22c55e;
+  padding: 6px 8px;
+}
+#coach-situation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.sit-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sit-label {
+  font-size: 10px;
+  font-weight: bold;
+  color: #22c55e;
+  min-width: 38px;
+  text-align: right;
+}
+.sit-btn {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  flex: 1;
+  min-height: 32px;
+}
+.sit-btn.active {
+  background: #22c55e;
+  color: #000;
+  border-color: #22c55e;
+}
+#coach-recs {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.rec-play {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #222;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-left: 4px solid #22c55e;
+}
+.rec-play:nth-child(1) { border-left-color: #22c55e; }
+.rec-play:nth-child(2) { border-left-color: #f59e0b; }
+.rec-play:nth-child(3) { border-left-color: #888; }
+.rec-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+}
+.rec-why {
+  font-size: 10px;
+  color: #aaa;
+  margin-left: 8px;
+}
+.rec-tag {
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.rec-tag.best { background: #166534; color: #22c55e; }
+.rec-tag.good { background: #78350f; color: #f59e0b; }
+.rec-tag.ok { background: #333; color: #888; }

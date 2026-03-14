@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1a1a2e">
   <title>Flag Football Playbook</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=22">
+  <link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
   <div id="app">
@@ -45,12 +45,41 @@
       <button class="ctrl-btn" id="btn-defense" title="Defense: Off / Man / Zone">🛡️</button>
       <button class="ctrl-btn" id="btn-ball" title="Toggle ball animation">🏈</button>
       <button class="ctrl-btn" id="btn-queue" title="Play Queue" style="opacity:0.4">📋</button>
+      <button class="ctrl-btn" id="btn-coach" title="Coach Call Sheet" style="opacity:0.4">🧠</button>
       <div class="speed-group">
         <button class="speed-btn" data-speed="0.25">0.25x</button>
         <button class="speed-btn" data-speed="0.5">0.5x</button>
         <button class="speed-btn active" data-speed="1">1x</button>
         <button class="speed-btn" data-speed="2">2x</button>
       </div>
+    </div>
+
+    <!-- Coach Call Sheet (hidden by default) -->
+    <div id="coach-panel" style="display:none">
+      <div id="coach-situation">
+        <div class="sit-row">
+          <span class="sit-label">DOWN</span>
+          <button class="sit-btn" data-sit="down" data-val="1">1st</button>
+          <button class="sit-btn" data-sit="down" data-val="2">2nd</button>
+          <button class="sit-btn" data-sit="down" data-val="3">3rd</button>
+          <button class="sit-btn" data-sit="down" data-val="4">4th</button>
+        </div>
+        <div class="sit-row">
+          <span class="sit-label">FIELD</span>
+          <button class="sit-btn" data-sit="field" data-val="open">Open</button>
+          <button class="sit-btn" data-sit="field" data-val="mid">Midfield</button>
+          <button class="sit-btn" data-sit="field" data-val="rz">Red Zone</button>
+          <button class="sit-btn" data-sit="field" data-val="nrz">No-Run</button>
+        </div>
+        <div class="sit-row">
+          <span class="sit-label">THEY</span>
+          <button class="sit-btn" data-sit="defense" data-val="man">Man</button>
+          <button class="sit-btn" data-sit="defense" data-val="zone">Zone</button>
+          <button class="sit-btn" data-sit="defense" data-val="rush">Rush</button>
+          <button class="sit-btn" data-sit="defense" data-val="idk">IDK</button>
+        </div>
+      </div>
+      <div id="coach-recs"></div>
     </div>
 
     <!-- Queue Bar (hidden by default) -->
@@ -77,8 +106,8 @@
     </div>
   </div>
 
-  <script src="plays.js?v=22"></script>
-  <script src="app.js?v=22"></script>
+  <script src="plays.js?v=23"></script>
+  <script src="app.js?v=23"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
