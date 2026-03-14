@@ -70,6 +70,10 @@ export const state = {
   activeTeam: '1',     // '1' or '2'
   rotationCounts: {},  // { playerName: playCount } for equal playing time
 
+  // ── Active Play Set (game day filter) ─────────────────────
+  activePlaySet: null,  // null = show all, Set of play names = show only these
+  activePlaySetEditing: false, // true when pick-mode is active
+
   // ── Editor state ─────────────────────────────────────────
   editorActive: false,
   editorPlay: null,          // deep copy of play being edited
@@ -233,6 +237,30 @@ export function loadQueueState() {
       if (data.queue && Array.isArray(data.queue)) {
         state.queue = data.queue;
         state.queuePos = Math.min(data.queuePos || 0, Math.max(0, state.queue.length - 1));
+      }
+    }
+  } catch (e) {}
+}
+
+// ── Active Play Set (game day filter) ─────────────────────────
+
+export function saveActivePlaySet() {
+  try {
+    if (state.activePlaySet) {
+      localStorage.setItem('playbook:activePlaySet', JSON.stringify([...state.activePlaySet]));
+    } else {
+      localStorage.removeItem('playbook:activePlaySet');
+    }
+  } catch (e) {}
+}
+
+export function loadActivePlaySet() {
+  try {
+    const raw = localStorage.getItem('playbook:activePlaySet');
+    if (raw) {
+      const names = JSON.parse(raw);
+      if (Array.isArray(names) && names.length > 0) {
+        state.activePlaySet = new Set(names);
       }
     }
   } catch (e) {}

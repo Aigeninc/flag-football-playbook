@@ -3,7 +3,7 @@
 import {
   state, LOCKED_PLAYERS, ALL_ROSTER,
   getActiveSubs, getPerPlaySubs, getDisplayName, getAvailableSubs,
-  saveSunlightMode, saveSubstitutions,
+  saveSunlightMode, saveSubstitutions, saveActivePlaySet,
 } from './state.js';
 import { drawFrame } from './renderer.js';
 import { togglePlayPause, replay, updateTimer } from './animation.js';
@@ -17,7 +17,57 @@ export function setSelectPlayFn(fn) { _selectPlay = fn; }
 export function buildPlaySelector() {
   const container = document.getElementById('play-selector');
   container.innerHTML = '';
+
+  // Pick mode: show all plays with checkboxes to build active set
+  if (state.activePlaySetEditing) {
+    const activeSet = state.activePlaySet || new Set();
+    PLAYS.forEach((play, i) => {
+      const btn = document.createElement('button');
+      const isSelected = activeSet.has(play.name);
+      btn.className = 'play-btn' + (isSelected ? ' active' : '') + (play.isCustom ? ' custom' : '');
+      btn.textContent = (isSelected ? '✅ ' : '⬜ ') + play.name;
+      btn.addEventListener('click', () => {
+        if (activeSet.has(play.name)) {
+          activeSet.delete(play.name);
+        } else {
+          activeSet.add(play.name);
+        }
+        state.activePlaySet = activeSet.size > 0 ? activeSet : null;
+        buildPlaySelector(); // refresh
+      });
+      container.appendChild(btn);
+    });
+
+    // Done button
+    const doneBtn = document.createElement('button');
+    doneBtn.className = 'play-btn active';
+    doneBtn.style.background = '#2d7d2d';
+    doneBtn.textContent = '✅ Done (' + activeSet.size + ' plays)';
+    doneBtn.addEventListener('click', () => {
+      state.activePlaySetEditing = false;
+      saveActivePlaySet();
+      buildPlaySelector();
+    });
+    container.appendChild(doneBtn);
+
+    // Show All button
+    const allBtn = document.createElement('button');
+    allBtn.className = 'play-btn';
+    allBtn.style.background = '#7d2d2d';
+    allBtn.textContent = '🔓 Show All';
+    allBtn.addEventListener('click', () => {
+      state.activePlaySet = null;
+      state.activePlaySetEditing = false;
+      saveActivePlaySet();
+      buildPlaySelector();
+    });
+    container.appendChild(allBtn);
+    return;
+  }
+
+  // Normal mode: show only active set (or all if no filter)
   PLAYS.forEach((play, i) => {
+    if (state.activePlaySet && !state.activePlaySet.has(play.name)) return; // filtered out
     const perPlaySubs = state.substitutions[i] && Object.keys(state.substitutions[i]).length > 0;
     const btn = document.createElement('button');
     let cls = 'play-btn' + (i === state.currentPlayIdx ? ' active' : '');
@@ -25,7 +75,7 @@ export function buildPlaySelector() {
     btn.className = cls;
     btn.textContent = play.name + (perPlaySubs ? ' ↔' : '') + (play.isCustom ? ' ★' : '');
     btn.addEventListener('click', () => {
-      if (state.editorActive) return; // don't switch plays while editing
+      if (state.editorActive) return;
       if (state.queueMode) {
         state.queue.push({ playIdx: i, result: null });
         state.queuePos = state.queue.length - 1;
@@ -36,6 +86,18 @@ export function buildPlaySelector() {
     });
     container.appendChild(btn);
   });
+
+  // "Pick Plays" button at the end
+  const pickBtn = document.createElement('button');
+  pickBtn.className = 'play-btn';
+  pickBtn.style.opacity = '0.6';
+  pickBtn.style.fontSize = '0.7em';
+  pickBtn.textContent = '⚙️ Pick Plays';
+  pickBtn.addEventListener('click', () => {
+    state.activePlaySetEditing = true;
+    buildPlaySelector();
+  });
+  container.appendChild(pickBtn);
 }
 
 // ── Player Filter ─────────────────────────────────────────────
