@@ -11,6 +11,7 @@
   let highlightPlayer = null; // null = show all
   let animId = null;
   let viewMode = 'qb'; // 'qb' = staggered reads (study), 'game' = all routes simultaneous
+  let defenseMode = 'off'; // 'off' = static gray, 'man' = follow receivers, 'zone' = shift to zones
 
   const TOTAL_TIME = 7.0;     // pass clock (post-snap)
   const ANIM_ROUTE_DURATION = 1.2; // seconds to draw a single route
@@ -167,11 +168,120 @@
     ctx.stroke();
   }
 
+  // Zone areas for 5-man defense: 2 corners, 1 MLB, 2 safeties
+  const ZONE_POSITIONS = {
+    CB_L:    { start: [6, 5],   zone: [5, 8] },    // Left corner — outside left
+    CB_R:    { start: [29, 5],  zone: [30, 8] },    // Right corner — outside right
+    MLB:     { start: [17.5, 7], zone: [17.5, 6] }, // Middle linebacker — center
+    SAFETY_L:{ start: [10, 13], zone: [10, 12] },   // Left safety — deep left
+    SAFETY_R:{ start: [28, 12], zone: [25, 12] },   // Right safety — deep right
+  };
+  const ZONE_ROLES = ['CB_L', 'MLB', 'CB_R', 'SAFETY_L', 'SAFETY_R'];
+
+  function getManAssignment(play, defIdx) {
+    // Assign each defender to the nearest offensive player with a route
+    const receivers = Object.entries(play.players)
+      .filter(([n, pd]) => pd.route && pd.route.length > 0 && pd.read > 0)
+      .sort((a, b) => a[1].read - b[1].read);
+
+    if (defIdx < receivers.length) {
+      return receivers[defIdx];
+    }
+    // Extra defenders: follow the RB or check-down
+    const remaining = Object.entries(play.players)
+      .filter(([n, pd]) => pd.route && pd.route.length > 0)
+      .filter(([n]) => !receivers.slice(0, defIdx).some(([rn]) => rn === n));
+    if (remaining.length > 0) return remaining[0];
+    return null;
+  }
+
+  function getDefenderPosition(play, defIdx, defStart) {
+    if (defenseMode === 'off' || animTime <= 0) return defStart;
+
+    const postTime = Math.max(0, animTime);
+    const reactDelay = 0.3; // Defenders react 0.3s after snap
+    const moveTime = Math.max(0, postTime - reactDelay);
+    const defSpeed = 0.7; // Defenders move slower than offense (0.0 to 1.0 scale)
+
+    if (defenseMode === 'man') {
+      const assignment = getManAssignment(play, defIdx);
+      if (!assignment) return defStart;
+      const [name, pd] = assignment;
+      // Follow the receiver's current position with a slight lag
+      const offensePos = getPlayerPosition(play, name, pd);
+      // Defender trails the receiver — interpolate from start toward receiver pos
+      const progress = Math.min(1, moveTime / (ANIM_ROUTE_DURATION * 1.3)) * defSpeed;
+      const adjustedProgress = Math.min(1, moveTime * 0.6); // Slower tracking
+      const dx = defStart[0] + (offensePos[0] - defStart[0]) * adjustedProgress;
+      const dy = defStart[1] + (offensePos[1] - defStart[1]) * adjustedProgress;
+      // Stay 1-2 yards behind/between receiver and end zone
+      const offsetY = Math.max(offensePos[1], dy + 1);
+      return [dx, offsetY];
+    }
+
+    if (defenseMode === 'zone') {
+      const role = ZONE_ROLES[defIdx] || 'MLB';
+      const zoneTarget = ZONE_POSITIONS[role].zone;
+      // Shift to zone position, then react to nearby receivers
+      const shiftTime = Math.min(1, moveTime * 0.8);
+      let zx = defStart[0] + (zoneTarget[0] - defStart[0]) * shiftTime;
+      let zy = defStart[1] + (zoneTarget[1] - defStart[1]) * shiftTime;
+
+      // After settling in zone, drift toward nearest route in their area
+      if (moveTime > 1.0) {
+        const driftTime = Math.min(1, (moveTime - 1.0) * 0.4);
+        let nearestDist = Infinity;
+        let nearestPos = null;
+        for (const [name, pd] of Object.entries(play.players)) {
+          if (!pd.route || pd.route.length === 0) continue;
+          const rpos = getPlayerPosition(play, name, pd);
+          const dist = Math.sqrt((rpos[0] - zx) ** 2 + (rpos[1] - zy) ** 2);
+          // Only react to receivers in their zone (within ~12 yards)
+          if (dist < 12 && dist < nearestDist) {
+            nearestDist = dist;
+            nearestPos = rpos;
+          }
+        }
+        if (nearestPos) {
+          zx = zx + (nearestPos[0] - zx) * driftTime * 0.4;
+          zy = zy + (nearestPos[1] - zy) * driftTime * 0.3;
+        }
+      }
+      return [zx, zy];
+    }
+
+    return defStart;
+  }
+
   function drawDefense(play) {
-    for (const [dx, dy] of play.defense) {
+    for (let i = 0; i < play.defense.length; i++) {
+      const [startX, startY] = play.defense[i];
+      const [dx, dy] = getDefenderPosition(play, i, [startX, startY]);
       const [cx, cy] = fieldToCanvas(dx, dy);
       const sz = 14;
-      ctx.fillStyle = '#888';
+
+      // Color defenders based on mode
+      let fillColor = '#888';
+      let label = 'D';
+      if (defenseMode === 'man') {
+        fillColor = '#cc4444';
+        label = 'M';
+      } else if (defenseMode === 'zone') {
+        fillColor = '#4466cc';
+        label = 'Z';
+
+        // Draw zone area indicator (faint circle)
+        if (animTime > 0) {
+          ctx.globalAlpha = 0.1;
+          ctx.beginPath();
+          ctx.arc(cx, cy, scaleLen(10), 0, Math.PI * 2);
+          ctx.fillStyle = '#4466cc';
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      ctx.fillStyle = fillColor;
       ctx.fillRect(cx - sz, cy - sz, sz * 2, sz * 2);
       ctx.strokeStyle = '#fff';
       ctx.lineWidth = 1.5;
@@ -180,7 +290,7 @@
       ctx.font = 'bold 12px system-ui';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('D', cx, cy);
+      ctx.fillText(label, cx, cy);
     }
   }
 
@@ -823,6 +933,25 @@
       setTimeout(() => {
         document.getElementById('play-notes').textContent = PLAYS[currentPlayIdx].notes || '';
       }, 1500);
+      drawFrame();
+    });
+
+    const defBtn = document.getElementById('btn-defense');
+    defBtn.addEventListener('click', () => {
+      const modes = ['off', 'man', 'zone'];
+      const idx = (modes.indexOf(defenseMode) + 1) % modes.length;
+      defenseMode = modes[idx];
+      const labels = { off: '🛡️', man: '🔴 MAN', zone: '🔵 ZONE' };
+      defBtn.textContent = labels[defenseMode];
+      defBtn.title = defenseMode === 'off' ? 'Defense: Off' :
+                     defenseMode === 'man' ? 'Defense: Man Coverage' : 'Defense: Zone Coverage';
+      document.getElementById('play-notes').textContent =
+        defenseMode === 'off' ? (PLAYS[currentPlayIdx].notes || '') :
+        defenseMode === 'man' ? 'MAN DEFENSE — each defender follows a receiver' :
+        'ZONE DEFENSE — defenders guard areas, react to nearby routes';
+      setTimeout(() => {
+        document.getElementById('play-notes').textContent = PLAYS[currentPlayIdx].notes || '';
+      }, 2000);
       drawFrame();
     });
 
