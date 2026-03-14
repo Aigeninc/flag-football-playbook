@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1a1a2e">
   <title>Flag Football Playbook</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <div id="app">
@@ -37,13 +37,6 @@
       <canvas id="field-canvas"></canvas>
     </div>
 
-    <!-- Info Panel -->
-    <div id="info-panel">
-      <div id="formation-label"></div>
-      <div id="when-to-use"></div>
-      <div id="play-notes"></div>
-    </div>
-
     <!-- Controls -->
     <div id="controls">
       <button class="ctrl-btn" id="btn-replay" title="Replay">🔄</button>
@@ -57,10 +50,17 @@
         <button class="speed-btn" data-speed="2">2x</button>
       </div>
     </div>
+
+    <!-- Info Panel -->
+    <div id="info-panel">
+      <div id="formation-label"></div>
+      <div id="when-to-use"></div>
+      <div id="play-notes"></div>
+    </div>
   </div>
 
-  <script src="plays.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="plays.js?v=6"></script>
+  <script src="app.js?v=6"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});

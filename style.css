@@ -22,9 +22,9 @@ html, body {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
-  overflow-x: hidden;
+  overflow: hidden;
   -webkit-tap-highlight-color: transparent;
-  touch-action: pan-y;
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -36,30 +36,32 @@ html, body {
   height: 100dvh;
   max-width: 900px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 /* ── Play Selector ──────────────────────────────────────── */
 #play-selector {
-  padding: 8px 12px;
+  padding: 4px 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   flex-shrink: 0;
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
+  touch-action: pan-x;
 }
 #play-selector::-webkit-scrollbar { display: none; }
 
 .play-btn {
   flex-shrink: 0;
-  padding: 10px 16px;
-  min-height: 44px;
+  padding: 6px 14px;
+  min-height: 38px;
   border: 2px solid var(--surface2);
   border-radius: 10px;
   background: var(--surface);
   color: var(--text);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -75,24 +77,30 @@ html, body {
 /* ── Player Color Filter ─────────────────────────────────── */
 #player-filter {
   display: flex;
-  gap: 10px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 4px 8px;
   justify-content: center;
   flex-shrink: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  touch-action: pan-x;
 }
+#player-filter::-webkit-scrollbar { display: none; }
 
 .player-dot-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 8px;
   border-radius: 20px;
   border: 2px solid transparent;
   background: var(--surface);
   cursor: pointer;
   transition: all 0.15s;
-  min-height: 36px;
+  min-height: 32px;
+  flex-shrink: 0;
 }
 .player-dot-btn:active { transform: scale(0.95); }
 .player-dot-btn.active { border-color: #fff; background: var(--surface2); }
@@ -111,13 +119,13 @@ html, body {
 
 /* ── Timer Bar ──────────────────────────────────────────── */
 #timer-container {
-  padding: 4px 12px;
+  padding: 2px 8px;
   flex-shrink: 0;
 }
 
 #timer-bar {
   position: relative;
-  height: 32px;
+  height: 24px;
   border-radius: 6px;
   overflow: hidden;
   background: #111;
@@ -166,12 +174,12 @@ html, body {
   position: absolute;
   top: -1px;
   right: 6px;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 900;
   color: #fff;
   text-shadow: 0 0 8px #000, 0 0 4px #000;
   z-index: 6;
-  line-height: 32px;
+  line-height: 24px;
 }
 
 .read-marker {
@@ -201,6 +209,8 @@ html, body {
   position: relative;
   min-height: 0;
   padding: 0 4px;
+  overflow: hidden;
+  touch-action: pan-x;
 }
 
 #field-canvas {
@@ -212,35 +222,48 @@ html, body {
 
 /* ── Info Panel ──────────────────────────────────────────── */
 #info-panel {
-  padding: 8px 12px;
+  padding: 2px 12px 4px;
   flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  overflow: hidden;
+  max-height: 22px;
 }
 
 #formation-label {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text-dim);
-  margin-bottom: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 #when-to-use {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 #when-to-use .bullet { color: var(--accent); margin-right: 4px; }
 
 #play-notes {
+  display: none; /* Hide on mobile — not useful during game */
   font-size: 11px;
   color: var(--nrz-orange);
-  margin-top: 4px;
   font-style: italic;
+  white-space: nowrap;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Controls ────────────────────────────────────────────── */
 #controls {
   display: flex;
-  gap: 8px;
-  padding: 8px 12px 12px;
+  gap: 6px;
+  padding: 4px 8px;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
@@ -289,11 +312,15 @@ html, body {
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
-  #play-selector { padding: 4px 8px; }
-  .play-btn { padding: 6px 12px; min-height: 36px; font-size: 12px; }
-  #player-filter { padding: 2px 8px; gap: 6px; }
-  #timer-container { padding: 2px 8px; }
-  #timer-bar { height: 24px; }
-  #info-panel { padding: 4px 8px; }
-  #controls { padding: 4px 8px 8px; }
+  #play-selector { padding: 2px 6px; }
+  .play-btn { padding: 4px 10px; min-height: 32px; font-size: 11px; }
+  #player-filter { padding: 2px 6px; gap: 4px; }
+  .player-dot-btn { min-height: 28px; padding: 2px 6px; }
+  #timer-container { padding: 1px 6px; }
+  #timer-bar { height: 20px; }
+  #timer-time { font-size: 12px; line-height: 20px; }
+  #info-panel { padding: 1px 6px 2px; max-height: 18px; }
+  #controls { padding: 2px 6px; gap: 4px; }
+  .ctrl-btn { min-width: 36px; min-height: 36px; font-size: 16px; }
+  .speed-btn { min-width: 36px; min-height: 36px; font-size: 11px; }
 }
