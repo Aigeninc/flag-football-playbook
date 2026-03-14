@@ -43,12 +43,13 @@
   }
 
   function getAvailableSubs(targetOriginal) {
-    // Who can replace this player? Anyone not already on the field
+    // Who can replace this player? Anyone not currently on the field
     const onField = getActiveRoster();
+    const currentHolder = getDisplayName(targetOriginal); // who's in the slot right now
     return ALL_ROSTER.filter(name =>
       !LOCKED_PLAYERS.includes(name) &&
       !onField.includes(name) &&
-      name !== targetOriginal
+      name !== currentHolder // can't sub yourself for yourself
     );
   }
 
