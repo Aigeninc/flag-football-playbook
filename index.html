@@ -48,6 +48,7 @@
       <button class="ctrl-btn" id="btn-edit" title="Edit / Create plays" style="opacity:0.4">✏️</button>
       <button class="ctrl-btn" id="btn-queue" title="Play Queue" style="opacity:0.4">📋</button>
       <button class="ctrl-btn" id="btn-coach" title="Coach Call Sheet" style="opacity:0.4">🧠</button>
+      <button class="ctrl-btn" id="btn-gameday" title="Game Day Call Sheet" style="opacity:0.4">🎯</button>
       <button class="ctrl-btn" id="btn-roster" title="Roster &amp; Lineup" style="opacity:0.4">👥</button>
       <div class="speed-group">
         <button class="speed-btn" data-speed="0.25">0.25x</button>
@@ -107,6 +108,51 @@
       <div id="when-to-use"></div>
       <div id="play-notes"></div>
     </div>
+  </div>
+
+  <!-- Game Day Panel Backdrop -->
+  <div id="gameday-backdrop" class="panel-backdrop"></div>
+
+  <!-- Game Day Bottom Sheet -->
+  <div id="gameday-panel" class="gameday-panel">
+    <div class="gd-panel-header">
+      <span class="gd-panel-title">🎯 CALL SHEET</span>
+      <div class="gd-header-actions">
+        <button class="gd-new-game-link" id="gd-new-game-btn" title="New Game">New Game</button>
+        <button class="panel-close-btn" id="gd-close-btn" aria-label="Close">✕</button>
+      </div>
+    </div>
+
+    <!-- Situation tabs -->
+    <div id="gd-situation-tabs" class="gd-situation-tabs"></div>
+
+    <!-- Play list -->
+    <div id="gd-play-list" class="gd-play-list"></div>
+
+    <!-- Result prompt (shown after calling a play) -->
+    <div id="gd-result-prompt" class="gd-result-prompt" style="display:none">
+      <span class="gd-prompt-label">How'd it go? <strong class="gd-prompt-name"></strong></span>
+      <div class="gd-result-btns">
+        <button class="gd-result-btn gd-result-worked" id="gd-result-worked">✅ Worked</button>
+        <button class="gd-result-btn gd-result-didnt" id="gd-result-didnt">❌ Didn't</button>
+        <button class="gd-result-btn gd-result-skip" id="gd-result-skip">⏭️ Skip</button>
+      </div>
+    </div>
+
+    <!-- Last called ticker -->
+    <div class="gd-last-called-bar">
+      <span class="gd-last-label">Last called:</span>
+      <div id="gd-last-called" class="gd-last-called"></div>
+    </div>
+
+    <!-- Bottom actions -->
+    <div class="gd-bottom-actions">
+      <button class="gd-action-btn" id="gd-stats-btn">📊 Stats</button>
+      <button class="gd-action-btn" id="gd-wristband-btn">🖨️ Wristband</button>
+    </div>
+
+    <!-- Stats panel (toggles inside) -->
+    <div id="gd-stats-panel" class="gd-stats-panel" style="display:none"></div>
   </div>
 
   <!-- Roster Panel Backdrop -->

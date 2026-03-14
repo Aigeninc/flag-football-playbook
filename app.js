@@ -44,6 +44,11 @@ import {
   initRoster, setSelectPlayFn as rosterSetSelectPlay,
 } from './modules/roster.js';
 
+import {
+  setupGamedayPanel, openGamedayPanel, closeGamedayPanel,
+  setSelectPlayFn as gamedaySetSelectPlay,
+} from './modules/gameday.js';
+
 // ── selectPlay — central navigation function ──────────────────
 
 function selectPlay(idx) {
@@ -110,6 +115,23 @@ function setupPanelToggles() {
   });
 }
 
+// ── Game Day button ───────────────────────────────────────────
+
+function setupGamedayButton() {
+  const gamedayBtn = document.getElementById('btn-gameday');
+  if (!gamedayBtn) return;
+  gamedayBtn.addEventListener('click', () => {
+    const panel = document.getElementById('gameday-panel');
+    if (panel && panel.classList.contains('open')) {
+      closeGamedayPanel();
+      gamedayBtn.style.opacity = '0.4';
+    } else {
+      openGamedayPanel();
+      gamedayBtn.style.opacity = '1';
+    }
+  });
+}
+
 // ── Edit button ───────────────────────────────────────────────
 
 function setupEditButton() {
@@ -135,6 +157,7 @@ function init() {
   queueSetSelectPlay(selectPlay);
   touchSetSelectPlay(selectPlay);
   rosterSetSelectPlay(selectPlay);
+  gamedaySetSelectPlay(selectPlay);
   setBuildPlaySelectorFn(buildPlaySelector);
 
   // Pass updateTimer to animation loop
@@ -163,6 +186,8 @@ function init() {
   setupKeyboard();
   setupPanelToggles();
   initRoster(); // Phase 3: initialize roster/lineup panel
+  setupGamedayPanel(); // Phase 4: initialize game day call sheet
+  setupGamedayButton(); // Phase 4: wire up 🎯 button
 
   window.addEventListener('resize', () => {
     resizeCanvas();
