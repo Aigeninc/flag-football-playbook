@@ -216,7 +216,7 @@ const PLAYS = [
     ],
     notes: '⚠ RUSH IS LIVE after lateral — ball out in 1.5 sec! TRICK PLAY — max 2-3x per game.',
     players: {
-      Braelyn:  { pos: [17.5, -3],   route: [[17.5, -1], [25, 4]], label: 'FLAT', read: 1, dashed: false,
+      Braelyn:  { pos: [17.5, -3],   route: [[20, -3], [20, -2], [25, 4]], label: 'FLAT', read: 1, dashed: false,
                   lateralTo: [22, -5] },
       Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 4, dashed: true },
       Greyson:  { pos: [4, 0],     route: [[4, 3], [14, 8]], label: 'SLANT', read: 2, dashed: false },

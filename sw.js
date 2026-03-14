@@ -1,11 +1,11 @@
 // Service Worker for offline support
-const CACHE_NAME = 'playbook-v16';
+const CACHE_NAME = 'playbook-v17';
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=16',
-  './app.js?v=16',
-  './plays.js?v=16',
+  './style.css?v=17',
+  './app.js?v=17',
+  './plays.js?v=17',
   './manifest.json',
 ];
 
