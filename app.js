@@ -142,9 +142,9 @@
     for (let y = FIELD_Y_MIN; y <= FIELD_Y_MAX; y += 5) {
       const [, cy] = fieldToCanvas(0, y);
       if (y === 0) {
-        // LOS - gold
-        ctx.strokeStyle = '#f5d742';
-        ctx.lineWidth = 3;
+        // LOS - bright white/gold, thick and obvious
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4;
       } else {
         ctx.strokeStyle = 'rgba(255,255,255,0.3)';
         ctx.lineWidth = 1;
@@ -164,13 +164,36 @@
       }
     }
 
-    // LOS label
+    // LOS label — both sides + center text
     const [, losCy] = fieldToCanvas(0, 0);
+    // Dashed gold overlay on the white line for extra visibility
+    ctx.strokeStyle = '#f5d742';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(fieldRect.x, losCy);
+    ctx.lineTo(fieldRect.x + fieldRect.w, losCy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // LOS label on right side
     ctx.fillStyle = '#f5d742';
-    ctx.font = 'bold 11px system-ui';
+    ctx.font = 'bold 12px system-ui';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillText('LOS', fieldRect.x + fieldRect.w + 3, losCy);
+
+    // LOS label on left side
+    ctx.textAlign = 'right';
+    ctx.fillText('LOS', fieldRect.x - 3, losCy);
+
+    // Center label on the line
+    ctx.font = 'bold 10px system-ui';
+    ctx.textAlign = 'center';
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = '#f5d742';
+    ctx.fillText('— LINE OF SCRIMMAGE —', fieldRect.x + fieldRect.w / 2, losCy - 8);
+    ctx.globalAlpha = 1;
 
     // NRZ overlay
     if (play.showNRZ) {
