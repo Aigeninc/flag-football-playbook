@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Flag Football Playbook</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Play Selector -->
+    <div id="play-selector"></div>
+
+    <!-- Player Color Filter -->
+    <div id="player-filter"></div>
+
+    <!-- Timer Bar -->
+    <div id="timer-container">
+      <div id="timer-bar">
+        <div id="timer-segments">
+          <div class="timer-seg green"><span class="timer-seg-label">QUICK</span></div>
+          <div class="timer-seg yellow"><span class="timer-seg-label">MEDIUM</span></div>
+          <div class="timer-seg orange"><span class="timer-seg-label">DEEP</span></div>
+          <div class="timer-seg red"><span class="timer-seg-label">NOW!</span></div>
+        </div>
+        <div id="timer-needle"></div>
+        <span id="timer-time">0.0s</span>
+      </div>
+    </div>
+
+    <!-- Field Canvas -->
+    <div id="field-container">
+      <canvas id="field-canvas"></canvas>
+    </div>
+
+    <!-- Info Panel -->
+    <div id="info-panel">
+      <div id="formation-label"></div>
+      <div id="when-to-use"></div>
+      <div id="play-notes"></div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls">
+      <button class="ctrl-btn" id="btn-replay" title="Replay">🔄</button>
+      <button class="ctrl-btn" id="btn-play" title="Play/Pause">▶</button>
+      <button class="ctrl-btn" id="btn-mode" title="Toggle QB Study / Game Speed">👁️</button>
+      <div class="speed-group">
+        <button class="speed-btn" data-speed="0.25">0.25x</button>
+        <button class="speed-btn" data-speed="0.5">0.5x</button>
+        <button class="speed-btn active" data-speed="1">1x</button>
+        <button class="speed-btn" data-speed="2">2x</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="plays.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

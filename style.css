@@ -1,0 +1,299 @@
+/* style.css — Flag Football Playbook */
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --surface2: #0f3460;
+  --text: #e8e8e8;
+  --text-dim: #888;
+  --field-green: #2d6a2e;
+  --los-gold: #f5d742;
+  --nrz-orange: #ff6600;
+  --accent: #53c7f0;
+  --timer-green: #22c55e;
+  --timer-yellow: #eab308;
+  --timer-orange: #f97316;
+  --timer-red: #ef4444;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Layout ─────────────────────────────────────────────── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ── Play Selector ──────────────────────────────────────── */
+#play-selector {
+  padding: 8px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#play-selector::-webkit-scrollbar { display: none; }
+
+.play-btn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  min-height: 44px;
+  border: 2px solid var(--surface2);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.play-btn:active { transform: scale(0.95); }
+.play-btn.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+/* ── Player Color Filter ─────────────────────────────────── */
+#player-filter {
+  display: flex;
+  gap: 10px;
+  padding: 6px 12px;
+  justify-content: center;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.player-dot-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 36px;
+}
+.player-dot-btn:active { transform: scale(0.95); }
+.player-dot-btn.active { border-color: #fff; background: var(--surface2); }
+.player-dot-btn .dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  flex-shrink: 0;
+}
+.player-dot-btn .name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── Timer Bar ──────────────────────────────────────────── */
+#timer-container {
+  padding: 4px 12px;
+  flex-shrink: 0;
+}
+
+#timer-bar {
+  position: relative;
+  height: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #111;
+  border: 1px solid #333;
+}
+
+#timer-segments {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+.timer-seg {
+  height: 100%;
+  position: relative;
+}
+.timer-seg.green  { background: var(--timer-green); flex: 2; }
+.timer-seg.yellow { background: var(--timer-yellow); flex: 2; }
+.timer-seg.orange { background: var(--timer-orange); flex: 2; }
+.timer-seg.red    { background: var(--timer-red); flex: 1; }
+
+.timer-seg-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: #000;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+#timer-needle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: #fff;
+  box-shadow: 0 0 6px #fff;
+  z-index: 5;
+  transition: none;
+}
+
+#timer-time {
+  position: absolute;
+  top: -1px;
+  right: 6px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 8px #000, 0 0 4px #000;
+  z-index: 6;
+  line-height: 32px;
+}
+
+.read-marker {
+  position: absolute;
+  top: -2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(-50%) translateY(-100%);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  z-index: 7;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.read-marker.visible { opacity: 1; }
+
+/* ── Canvas Area ─────────────────────────────────────────── */
+#field-container {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  padding: 0 4px;
+}
+
+#field-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 8px;
+}
+
+/* ── Info Panel ──────────────────────────────────────────── */
+#info-panel {
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+
+#formation-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+#when-to-use {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}
+#when-to-use .bullet { color: var(--accent); margin-right: 4px; }
+
+#play-notes {
+  font-size: 11px;
+  color: var(--nrz-orange);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* ── Controls ────────────────────────────────────────────── */
+#controls {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ctrl-btn {
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.ctrl-btn:active { transform: scale(0.9); background: var(--surface2); }
+.ctrl-btn.active-speed { background: var(--accent); color: #000; }
+
+.speed-group {
+  display: flex;
+  gap: 4px;
+}
+.speed-btn {
+  min-width: 44px;
+  min-height: 44px;
+  border: 2px solid var(--surface2);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.speed-btn:active { transform: scale(0.9); }
+.speed-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .play-btn { font-size: 15px; padding: 12px 20px; }
+  #timer-time { font-size: 22px; }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  #play-selector { padding: 4px 8px; }
+  .play-btn { padding: 6px 12px; min-height: 36px; font-size: 12px; }
+  #player-filter { padding: 2px 8px; gap: 6px; }
+  #timer-container { padding: 2px 8px; }
+  #timer-bar { height: 24px; }
+  #info-panel { padding: 4px 8px; }
+  #controls { padding: 4px 8px 8px; }
+}
