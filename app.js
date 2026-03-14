@@ -20,6 +20,11 @@
   let subMenuOpen = false;
   let subMenuTarget = null; // player name being subbed out
 
+  // Play Queue state
+  let queueMode = false;     // queue panel visible?
+  let queue = [];             // array of { playIdx: number, result: null|'success'|'fail' }
+  let queuePos = 0;          // current position in queue
+
   const LOCKED_PLAYERS = ['Braelyn', 'Lenox']; // Can't be subbed out
   const ALL_ROSTER = ['Braelyn', 'Lenox', 'Greyson', 'Marshall', 'Cooper', 'Jordy', 'Zeke'];
 
@@ -1126,7 +1131,17 @@
       const hasSubs = substitutions[i] && Object.keys(substitutions[i]).length > 0;
       btn.className = 'play-btn' + (i === currentPlayIdx ? ' active' : '');
       btn.textContent = play.name + (hasSubs ? ' ↔' : '');
-      btn.addEventListener('click', () => selectPlay(i));
+      btn.addEventListener('click', () => {
+        if (queueMode) {
+          // In queue mode: tap adds to queue
+          queue.push({ playIdx: i, result: null });
+          queuePos = queue.length - 1;
+          selectPlay(i);
+          renderQueue();
+        } else {
+          selectPlay(i);
+        }
+      });
       container.appendChild(btn);
     });
   }
@@ -1300,6 +1315,27 @@
       drawFrame();
     });
 
+    // Queue toggle
+    const queueBtn = document.getElementById('btn-queue');
+    queueBtn.addEventListener('click', () => {
+      queueMode = !queueMode;
+      queueBtn.style.opacity = queueMode ? '1' : '0.4';
+      document.getElementById('queue-bar').style.display = queueMode ? 'block' : 'none';
+      renderQueue();
+      buildPlaySelector(); // update play buttons to show "add" behavior
+    });
+
+    // Queue control buttons
+    document.getElementById('queue-success').addEventListener('click', () => markPlay('success'));
+    document.getElementById('queue-fail').addEventListener('click', () => markPlay('fail'));
+    document.getElementById('queue-next').addEventListener('click', () => advanceQueue(1));
+    document.getElementById('queue-prev').addEventListener('click', () => advanceQueue(-1));
+    document.getElementById('queue-clear').addEventListener('click', () => {
+      queue = [];
+      queuePos = 0;
+      renderQueue();
+    });
+
     document.querySelectorAll('.speed-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         speed = parseFloat(btn.dataset.speed);
@@ -1307,6 +1343,70 @@
         btn.classList.add('active');
       });
     });
+  }
+
+  function markPlay(result) {
+    if (queue.length === 0) return;
+    queue[queuePos].result = result;
+    renderQueue();
+    // Auto-advance to next unmarked play
+    if (queuePos < queue.length - 1) {
+      advanceQueue(1);
+    }
+  }
+
+  function advanceQueue(dir) {
+    if (queue.length === 0) return;
+    queuePos = Math.max(0, Math.min(queue.length - 1, queuePos + dir));
+    selectPlay(queue[queuePos].playIdx);
+    renderQueue();
+  }
+
+  function renderQueue() {
+    const bar = document.getElementById('queue-bar');
+    if (!queueMode) { bar.style.display = 'none'; return; }
+    bar.style.display = 'block';
+
+    const playsDiv = document.getElementById('queue-plays');
+    playsDiv.innerHTML = '';
+
+    if (queue.length === 0) {
+      document.getElementById('queue-status').textContent = 'QUEUE: Tap plays to add ↑';
+      document.getElementById('queue-score').textContent = '';
+      return;
+    }
+
+    // Status
+    const total = queue.length;
+    const played = queue.filter(q => q.result !== null).length;
+    const successes = queue.filter(q => q.result === 'success').length;
+    const fails = queue.filter(q => q.result === 'fail').length;
+    document.getElementById('queue-status').textContent = `PLAY ${queuePos + 1} of ${total}`;
+    document.getElementById('queue-score').textContent = played > 0
+      ? `✅${successes} ❌${fails} (${Math.round(successes / played * 100)}%)`
+      : '';
+
+    // Chips
+    queue.forEach((q, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'queue-chip' +
+        (i === queuePos ? ' active' : '') +
+        (q.result === 'success' ? ' success' : '') +
+        (q.result === 'fail' ? ' fail' : '');
+      const name = PLAYS[q.playIdx].name;
+      const resultIcon = q.result === 'success' ? ' ✅' : q.result === 'fail' ? ' ❌' : '';
+      chip.innerHTML = `<span>${i + 1}. ${name}</span><span class="chip-result">${resultIcon}</span>`;
+      chip.addEventListener('click', () => {
+        queuePos = i;
+        selectPlay(queue[i].playIdx);
+        renderQueue();
+      });
+      playsDiv.appendChild(chip);
+    });
+
+    // Scroll active chip into view
+    const activeChip = playsDiv.querySelector('.queue-chip.active');
+    if (activeChip) activeChip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }
 
   function selectPlay(idx) {

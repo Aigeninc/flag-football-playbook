@@ -324,3 +324,84 @@ html, body {
   .ctrl-btn { min-width: 36px; min-height: 36px; font-size: 16px; }
   .speed-btn { min-width: 36px; min-height: 36px; font-size: 11px; }
 }
+
+/* Queue Bar */
+#queue-bar {
+  background: var(--surface);
+  border-top: 2px solid var(--los-gold);
+  padding: 4px 8px;
+}
+#queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--los-gold);
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+#queue-score {
+  font-size: 13px;
+  color: #fff;
+}
+#queue-plays {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 2px 0;
+  margin-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+.queue-chip {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: bold;
+  background: #333;
+  color: #fff;
+  border: 2px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.queue-chip.active {
+  border-color: var(--los-gold);
+  background: var(--surface2);
+}
+.queue-chip.success {
+  background: #166534;
+  border-color: #22c55e;
+}
+.queue-chip.fail {
+  background: #7f1d1d;
+  border-color: #ef4444;
+}
+.queue-chip .chip-result {
+  font-size: 10px;
+}
+#queue-controls {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+.queue-btn {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 18px;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.queue-btn.queue-success { background: #166534; border-color: #22c55e; }
+.queue-btn.queue-fail { background: #7f1d1d; border-color: #ef4444; }
+.queue-btn.queue-clear { font-size: 14px; opacity: 0.6; }

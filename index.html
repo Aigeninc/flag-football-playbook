@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1a1a2e">
   <title>Flag Football Playbook</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=21">
+  <link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
   <div id="app">
@@ -44,11 +44,28 @@
       <button class="ctrl-btn" id="btn-mode" title="Toggle QB Study / Game Speed">👁️</button>
       <button class="ctrl-btn" id="btn-defense" title="Defense: Off / Man / Zone">🛡️</button>
       <button class="ctrl-btn" id="btn-ball" title="Toggle ball animation">🏈</button>
+      <button class="ctrl-btn" id="btn-queue" title="Play Queue" style="opacity:0.4">📋</button>
       <div class="speed-group">
         <button class="speed-btn" data-speed="0.25">0.25x</button>
         <button class="speed-btn" data-speed="0.5">0.5x</button>
         <button class="speed-btn active" data-speed="1">1x</button>
         <button class="speed-btn" data-speed="2">2x</button>
+      </div>
+    </div>
+
+    <!-- Queue Bar (hidden by default) -->
+    <div id="queue-bar" style="display:none">
+      <div id="queue-header">
+        <span id="queue-status">QUEUE: Tap plays to add</span>
+        <span id="queue-score"></span>
+      </div>
+      <div id="queue-plays"></div>
+      <div id="queue-controls">
+        <button id="queue-prev" class="queue-btn">◀</button>
+        <button id="queue-fail" class="queue-btn queue-fail">❌</button>
+        <button id="queue-success" class="queue-btn queue-success">✅</button>
+        <button id="queue-next" class="queue-btn">▶</button>
+        <button id="queue-clear" class="queue-btn queue-clear">🗑️</button>
       </div>
     </div>
 
@@ -60,8 +77,8 @@
     </div>
   </div>
 
-  <script src="plays.js?v=21"></script>
-  <script src="app.js?v=21"></script>
+  <script src="plays.js?v=22"></script>
+  <script src="app.js?v=22"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
