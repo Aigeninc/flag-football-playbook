@@ -15,6 +15,28 @@ export const FIELD_Y_MAX = 18;
 export const LOCKED_PLAYERS = ['Braelyn', 'Lenox'];
 export const ALL_ROSTER = ['Braelyn', 'Lenox', 'Greyson', 'Marshall', 'Cooper', 'Jordy', 'Zeke'];
 
+// ── Roster / Lineup constants ─────────────────────────────────
+
+export const POSITIONS = ['QB', 'C', 'WR1', 'WR2', 'RB'];
+
+// Maps the DEFAULT player names → their canonical position
+export const DEFAULT_POSITION_MAP = {
+  'Braelyn': 'QB',
+  'Lenox':   'C',
+  'Greyson': 'WR1',
+  'Marshall':'WR2',
+  'Cooper':  'RB',
+};
+
+// Maps canonical position → default player name (inverse of above)
+export const DEFAULT_LINEUP = {
+  'QB':  'Braelyn',
+  'C':   'Lenox',
+  'WR1': 'Greyson',
+  'WR2': 'Marshall',
+  'RB':  'Cooper',
+};
+
 // Mutable application state (single object for easy sharing)
 export const state = {
   currentPlayIdx: 0,
@@ -28,7 +50,7 @@ export const state = {
   defenseMode: 'off',  // 'off' | 'man' | 'zone'
   showBall: false,
   sunlightMode: false,
-  substitutions: {},   // { playIdx: { origName: replaceName } }
+  substitutions: {},   // { playIdx: { origName: replaceName } } — per-play overrides
   subMenuOpen: false,
   subMenuTarget: null,
   coachMode: false,
@@ -36,6 +58,17 @@ export const state = {
   queueMode: false,
   queue: [],           // [{ playIdx, result: null|'success'|'fail' }]
   queuePos: 0,
+
+  // ── Roster & Lineup ───────────────────────────────────────
+  roster: [],          // [{ id, name, number, positions, color }]
+  lineup: {            // First team: position → player name
+    QB: 'Braelyn', C: 'Lenox', WR1: 'Greyson', WR2: 'Marshall', RB: 'Cooper',
+  },
+  lineup2: {           // Second team: position → player name (null = empty)
+    QB: null, C: null, WR1: null, WR2: null, RB: null,
+  },
+  activeTeam: '1',     // '1' or '2'
+  rotationCounts: {},  // { playerName: playCount } for equal playing time
 
   // ── Editor state ─────────────────────────────────────────
   editorActive: false,
@@ -57,13 +90,42 @@ export function getAnimStart(play) {
   return hasMotion(play) ? -PRE_SNAP_TOTAL : 0;
 }
 
+// Compute lineup-based subs: which default players are replaced by lineup
+export function getLineupSubs() {
+  const lineup = state.activeTeam === '1' ? state.lineup : state.lineup2;
+  const result = {};
+  for (const [position, assignedPlayer] of Object.entries(lineup)) {
+    if (!assignedPlayer) continue;
+    const defaultPlayer = DEFAULT_LINEUP[position];
+    if (defaultPlayer && defaultPlayer !== assignedPlayer) {
+      result[defaultPlayer] = assignedPlayer;
+    }
+  }
+  return result;
+}
+
+// Get all active subs for current play: lineup subs + per-play overrides (per-play wins)
 export function getActiveSubs() {
+  const lineupSubs = getLineupSubs();
+  const perPlaySubs = state.substitutions[state.currentPlayIdx] || {};
+  return { ...lineupSubs, ...perPlaySubs };
+}
+
+// Get per-play subs only (without lineup subs)
+export function getPerPlaySubs() {
   return state.substitutions[state.currentPlayIdx] || {};
 }
 
 export function getDisplayName(originalName) {
-  const subs = getActiveSubs();
-  return subs[originalName] || originalName;
+  // Per-play subs take priority over lineup subs
+  const perPlaySubs = state.substitutions[state.currentPlayIdx] || {};
+  if (perPlaySubs[originalName]) return perPlaySubs[originalName];
+
+  // Lineup subs (based on current team assignment)
+  const lineupSubs = getLineupSubs();
+  if (lineupSubs[originalName]) return lineupSubs[originalName];
+
+  return originalName;
 }
 
 export function getActiveRoster() {
@@ -79,11 +141,24 @@ export function getActiveRoster() {
 export function getAvailableSubs(targetOriginal) {
   const onField = getActiveRoster();
   const currentHolder = getDisplayName(targetOriginal);
-  return ALL_ROSTER.filter(name =>
+  // Use dynamic roster if populated, else fall back to hardcoded ALL_ROSTER
+  const pool = state.roster.length > 0
+    ? state.roster.map(p => p.name)
+    : ALL_ROSTER;
+  return pool.filter(name =>
     !LOCKED_PLAYERS.includes(name) &&
     !onField.includes(name) &&
     name !== currentHolder
   );
+}
+
+// Get display name for a specific play (not the currently viewed play)
+export function getDisplayNameForPlay(originalName, playIdx) {
+  const perPlaySubs = state.substitutions[playIdx] || {};
+  if (perPlaySubs[originalName]) return perPlaySubs[originalName];
+  const lineupSubs = getLineupSubs();
+  if (lineupSubs[originalName]) return lineupSubs[originalName];
+  return originalName;
 }
 
 // ── Custom Play Storage ───────────────────────────────────────
@@ -148,5 +223,20 @@ export function loadPreferences() {
 export function saveSunlightMode() {
   try {
     localStorage.setItem('playbook:sunlightMode', state.sunlightMode ? '1' : '0');
+  } catch (e) {}
+}
+
+export function saveSubstitutions() {
+  try {
+    localStorage.setItem('playbook:subs', JSON.stringify(state.substitutions));
+  } catch (e) {}
+}
+
+export function loadSubstitutions() {
+  try {
+    const raw = localStorage.getItem('playbook:subs');
+    if (raw) {
+      state.substitutions = JSON.parse(raw);
+    }
   } catch (e) {}
 }

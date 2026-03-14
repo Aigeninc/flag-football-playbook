@@ -1,6 +1,6 @@
 // Service Worker for offline support
 // Update CACHE_VERSION when assets change to bust old caches
-const CACHE_VERSION = '20260314-1';
+const CACHE_VERSION = '20260314-phase3';
 const CACHE_NAME = 'playbook-' + CACHE_VERSION;
 
 const ASSETS = [
@@ -17,6 +17,8 @@ const ASSETS = [
   './modules/coach.js',
   './modules/queue.js',
   './modules/touch.js',
+  './modules/editor.js',
+  './modules/roster.js',
 ];
 
 self.addEventListener('install', e => {

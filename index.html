@@ -48,6 +48,7 @@
       <button class="ctrl-btn" id="btn-edit" title="Edit / Create plays" style="opacity:0.4">✏️</button>
       <button class="ctrl-btn" id="btn-queue" title="Play Queue" style="opacity:0.4">📋</button>
       <button class="ctrl-btn" id="btn-coach" title="Coach Call Sheet" style="opacity:0.4">🧠</button>
+      <button class="ctrl-btn" id="btn-roster" title="Roster &amp; Lineup" style="opacity:0.4">👥</button>
       <div class="speed-group">
         <button class="speed-btn" data-speed="0.25">0.25x</button>
         <button class="speed-btn" data-speed="0.5">0.5x</button>
@@ -107,6 +108,46 @@
       <div id="play-notes"></div>
     </div>
   </div>
+
+  <!-- Roster Panel Backdrop -->
+  <div id="roster-backdrop" class="panel-backdrop"></div>
+
+  <!-- Roster Panel -->
+  <div id="roster-panel" class="side-panel">
+    <div class="panel-header">
+      <span class="panel-title">👥 Roster &amp; Lineup</span>
+      <button class="panel-close-btn" id="roster-close-btn" aria-label="Close">✕</button>
+    </div>
+
+    <div class="panel-body">
+
+      <!-- Starting Lineup -->
+      <div class="roster-section">
+        <div class="roster-section-title">STARTING LINEUP</div>
+        <div id="lineup-grid" class="lineup-grid"></div>
+        <div id="roster-rotation-bar" class="rotation-bar"></div>
+      </div>
+
+      <!-- Bench / Full Roster -->
+      <div class="roster-section">
+        <div class="roster-section-title">BENCH &amp; ROSTER</div>
+        <div id="bench-list" class="bench-list"></div>
+      </div>
+
+      <!-- Inline Player Form -->
+      <div id="roster-form-area" class="roster-form-area" style="display:none"></div>
+
+      <!-- My Routes Section -->
+      <div class="roster-section">
+        <div class="roster-section-title">MY ROUTES</div>
+        <div id="routes-player-select" class="routes-player-select"></div>
+      </div>
+
+      <!-- Routes Result (shown when a player is tapped) -->
+      <div id="routes-section" class="routes-result" style="display:none"></div>
+
+    </div><!-- /.panel-body -->
+  </div><!-- /#roster-panel -->
 
   <script src="plays.js"></script>
   <script type="module" src="app.js"></script>

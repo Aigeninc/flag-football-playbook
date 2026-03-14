@@ -2,7 +2,7 @@
 // PLAYS and PLAYERS are globals loaded from plays.js (regular script)
 
 import {
-  state, getAnimStart, loadQueueState, loadPreferences, loadCustomPlays,
+  state, getAnimStart, loadQueueState, loadPreferences, loadCustomPlays, loadSubstitutions,
 } from './modules/state.js';
 
 import {
@@ -39,6 +39,10 @@ import {
   buildEditToolbar, setupEditorCanvasEvents,
   setEditorCallbacks, handleEditToggle,
 } from './modules/editor.js';
+
+import {
+  initRoster, setSelectPlayFn as rosterSetSelectPlay,
+} from './modules/roster.js';
 
 // ── selectPlay — central navigation function ──────────────────
 
@@ -123,12 +127,14 @@ function init() {
   loadPreferences();
   loadQueueState();
   loadCustomPlays(); // Load custom plays from localStorage into PLAYS array
+  loadSubstitutions(); // Load persisted per-play subs
 
   // Wire up selectPlay callbacks in each module
   uiSetSelectPlay(selectPlay);
   coachSetSelectPlay(selectPlay);
   queueSetSelectPlay(selectPlay);
   touchSetSelectPlay(selectPlay);
+  rosterSetSelectPlay(selectPlay);
   setBuildPlaySelectorFn(buildPlaySelector);
 
   // Pass updateTimer to animation loop
@@ -156,6 +162,7 @@ function init() {
   setupTouch();
   setupKeyboard();
   setupPanelToggles();
+  initRoster(); // Phase 3: initialize roster/lineup panel
 
   window.addEventListener('resize', () => {
     resizeCanvas();

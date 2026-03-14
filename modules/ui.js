@@ -2,8 +2,8 @@
 
 import {
   state, LOCKED_PLAYERS, ALL_ROSTER,
-  getActiveSubs, getDisplayName, getAvailableSubs,
-  saveSunlightMode,
+  getActiveSubs, getPerPlaySubs, getDisplayName, getAvailableSubs,
+  saveSunlightMode, saveSubstitutions,
 } from './state.js';
 import { drawFrame } from './renderer.js';
 import { togglePlayPause, replay, updateTimer } from './animation.js';
@@ -18,12 +18,12 @@ export function buildPlaySelector() {
   const container = document.getElementById('play-selector');
   container.innerHTML = '';
   PLAYS.forEach((play, i) => {
-    const hasSubs = state.substitutions[i] && Object.keys(state.substitutions[i]).length > 0;
+    const perPlaySubs = state.substitutions[i] && Object.keys(state.substitutions[i]).length > 0;
     const btn = document.createElement('button');
     let cls = 'play-btn' + (i === state.currentPlayIdx ? ' active' : '');
     if (play.isCustom) cls += ' custom';
     btn.className = cls;
-    btn.textContent = play.name + (hasSubs ? ' ↔' : '') + (play.isCustom ? ' ★' : '');
+    btn.textContent = play.name + (perPlaySubs ? ' ↔' : '') + (play.isCustom ? ' ★' : '');
     btn.addEventListener('click', () => {
       if (state.editorActive) return; // don't switch plays while editing
       if (state.queueMode) {
@@ -48,14 +48,16 @@ export function buildPlayerFilter() {
 
   for (const origName of Object.keys(play.players)) {
     const dispName = subs[origName] || origName;
-    const p = PLAYERS[dispName];
+    const p = PLAYERS[dispName] || state.roster?.find(r => r.name === dispName);
     if (!p) continue;
     const isLocked = LOCKED_PLAYERS.includes(origName);
+    // Show sub indicator if different from ORIGINAL name (lineup or per-play sub)
     const isSub = dispName !== origName;
 
+    const dotColor = p.color || '#999';
     const btn = document.createElement('button');
     btn.className = 'player-dot-btn' + (state.highlightPlayer === origName ? ' active' : '');
-    btn.innerHTML = `<span class="dot" style="background:${p.color}${isSub ? ';box-shadow:0 0 4px 2px #fff' : ''}"></span><span class="name">${dispName}${isSub ? '↔' : ''}</span>`;
+    btn.innerHTML = `<span class="dot" style="background:${dotColor}${isSub ? ';box-shadow:0 0 4px 2px #fff' : ''}"></span><span class="name">${dispName}${isSub ? '↔' : ''}</span>`;
 
     let lastTap = 0;
     btn.addEventListener('click', (e) => {
@@ -87,13 +89,16 @@ export function buildPlayerFilter() {
     container.appendChild(btn);
   }
 
-  if (Object.keys(subs).length > 0) {
+  // Show reset only if there are per-play subs (not just lineup subs)
+  const perPlaySubs = getPerPlaySubs();
+  if (Object.keys(perPlaySubs).length > 0) {
     const resetBtn = document.createElement('button');
     resetBtn.className = 'player-dot-btn';
     resetBtn.innerHTML = '<span class="name" style="font-size:11px">↩ Reset</span>';
     resetBtn.style.opacity = '0.7';
     resetBtn.addEventListener('click', () => {
       delete state.substitutions[state.currentPlayIdx];
+      saveSubstitutions();
       closeSubMenu();
       buildPlayerFilter();
       drawFrame();
@@ -151,6 +156,7 @@ export function makeSub(origName, replacementName) {
     state.substitutions[state.currentPlayIdx] = {};
   }
   state.substitutions[state.currentPlayIdx][origName] = replacementName;
+  saveSubstitutions(); // Persist per-play subs across refresh
   closeSubMenu();
   buildPlayerFilter();
   buildPlaySelector();

@@ -362,7 +362,10 @@ function drawDefense(play) {
 
 function getPlayerColor(name) {
   const displayName = getDisplayName(name);
-  return PLAYERS[displayName] ? PLAYERS[displayName].color : '#fff';
+  if (PLAYERS[displayName]) return PLAYERS[displayName].color;
+  // Check dynamic roster for newly added players
+  const rp = state.roster ? state.roster.find(p => p.name === displayName) : null;
+  return rp ? rp.color : '#999';
 }
 
 function getPlayerDisplayName(origName) { return getDisplayName(origName); }
@@ -576,6 +579,7 @@ function drawPlayers(play) {
     ctx.fillStyle = tc;
     ctx.font = `bold ${state.sunlightMode ? 11 : 9}px system-ui`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    // Show up to 7 chars of name
     ctx.fillText(dispName.substring(0, 7), cx, cy);
     ctx.globalAlpha = 1;
   }
