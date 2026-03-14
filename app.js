@@ -12,6 +12,7 @@
   let animId = null;
   let viewMode = 'qb'; // 'qb' = staggered reads (study), 'game' = all routes simultaneous
   let defenseMode = 'off'; // 'off' = static gray, 'man' = follow receivers, 'zone' = shift to zones
+  let showBall = false;   // toggle for ball animation
 
   // Substitution state: per-play mapping of original player name → replacement name
   // e.g., { 3: { 'Cooper': 'Jordy' } } means on play index 3, Jordy replaces Cooper
@@ -129,6 +130,7 @@
     drawMotions(play);
     drawRoutes(play);
     drawPlayers(play);
+    drawBall(play);
     drawSpecialLabels(play);
     drawSnapIndicator(play);
   }
@@ -699,6 +701,167 @@
     return pd.route[pd.route.length - 1]; // At end of route
   }
 
+  // ── Ball Animation ───────────────────────────────────────
+  const BALL_TRANS = { snap: 0.3, throw: 0.5, handoff: 0.25, lateral: 0.3, carry: 0 };
+
+  function getBallPosition(play) {
+    if (!play.ballPath || play.ballPath.length === 0) {
+      const qbPd = play.players['Braelyn'];
+      return qbPd ? getPlayerPosition(play, 'Braelyn', qbPd) : [17.5, -3];
+    }
+    const bp = play.ballPath;
+
+    // Pre-snap: ball sits with the snapper (Lenox) at his starting position
+    if (animTime < 0) {
+      const snapperPd = play.players[bp[0].from];
+      return snapperPd ? snapperPd.pos : [17.5, 0];
+    }
+
+    let lastHolder = bp[0].from;
+
+    for (let i = 0; i < bp.length; i++) {
+      const seg = bp[i];
+      const dur = BALL_TRANS[seg.type] || 0.3;
+      const segEnd = seg.time + dur;
+
+      if (animTime < seg.time) {
+        // Before this event — ball stays with whoever had it
+        break;
+      }
+
+      if (animTime < segEnd) {
+        // Mid-transition: interpolate
+        const t = (animTime - seg.time) / dur;
+        const fromPd = play.players[seg.from];
+        const toPd   = play.players[seg.to];
+        if (!fromPd || !toPd) { lastHolder = seg.to; break; }
+
+        const fromPos = getPlayerPosition(play, seg.from, fromPd);
+        const toPos   = getPlayerPosition(play, seg.to,   toPd);
+
+        if (seg.type === 'throw') {
+          // Parabolic arc: perpendicular offset peaks at midpoint
+          const dx = toPos[0] - fromPos[0];
+          const dy = toPos[1] - fromPos[1];
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const perpX = -dy / dist;
+          const perpY =  dx / dist;
+          const arcH  = Math.min(4, dist * 0.35);
+          const ctrlX = (fromPos[0] + toPos[0]) / 2 + perpX * arcH;
+          const ctrlY = (fromPos[1] + toPos[1]) / 2 + perpY * arcH;
+          // Quadratic Bezier
+          const bx = (1-t)*(1-t)*fromPos[0] + 2*(1-t)*t*ctrlX + t*t*toPos[0];
+          const by = (1-t)*(1-t)*fromPos[1] + 2*(1-t)*t*ctrlY + t*t*toPos[1];
+          return [bx, by];
+        } else {
+          // Linear for snap, handoff, lateral
+          return [
+            fromPos[0] + (toPos[0] - fromPos[0]) * t,
+            fromPos[1] + (toPos[1] - fromPos[1]) * t,
+          ];
+        }
+      }
+
+      // Transition complete — advance holder
+      lastHolder = seg.to;
+    }
+
+    // Ball rests with lastHolder; follow their current position
+    const holderPd = play.players[lastHolder];
+    if (!holderPd) return [17.5, -3];
+    return getPlayerPosition(play, lastHolder, holderPd);
+  }
+
+  function drawBall(play) {
+    if (!showBall || !play.ballPath) return;
+
+    const bp = play.ballPath;
+
+    // Draw dotted throw arc trails (full arc for any completed/in-progress throws)
+    if (animTime > 0) {
+      for (let i = 0; i < bp.length; i++) {
+        const seg = bp[i];
+        if (seg.type !== 'throw') continue;
+        if (animTime < seg.time) break;
+
+        const fromPd = play.players[seg.from];
+        const toPd   = play.players[seg.to];
+        if (!fromPd || !toPd) continue;
+
+        // Snap the from-position to where the passer was AT throw time
+        // (use starting pos for QB, since routes typically haven't completed)
+        const fromPos = getPlayerPosition(play, seg.from, fromPd);
+        const toPos   = getPlayerPosition(play, seg.to,   toPd);
+
+        const dx = toPos[0] - fromPos[0];
+        const dy = toPos[1] - fromPos[1];
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const perpX = -dy / dist;
+        const perpY =  dx / dist;
+        const arcH  = Math.min(4, dist * 0.35);
+
+        const [fx, fy]   = fieldToCanvas(fromPos[0], fromPos[1]);
+        const [tx, ty]   = fieldToCanvas(toPos[0],   toPos[1]);
+        const ctrlXf = (fromPos[0] + toPos[0]) / 2 + perpX * arcH;
+        const ctrlYf = (fromPos[1] + toPos[1]) / 2 + perpY * arcH;
+        const [cx2, cy2] = fieldToCanvas(ctrlXf, ctrlYf);
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 210, 100, 0.45)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 5]);
+        ctx.beginPath();
+        ctx.moveTo(fx, fy);
+        ctx.quadraticCurveTo(cx2, cy2, tx, ty);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+    }
+
+    // Get ball's current field position and draw it
+    const [bfx, bfy] = getBallPosition(play);
+    const [bcx, bcy] = fieldToCanvas(bfx, bfy);
+    const R = 7;
+
+    ctx.save();
+
+    // Drop shadow
+    ctx.shadowColor = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur  = 5;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 2;
+
+    // Ball body
+    ctx.beginPath();
+    ctx.arc(bcx, bcy, R, 0, Math.PI * 2);
+    ctx.fillStyle = '#8B4513';
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // White lace — horizontal seam
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(bcx - R + 2, bcy);
+    ctx.lineTo(bcx + R - 2, bcy);
+    ctx.stroke();
+
+    // Lace stitches — tiny vertical ticks
+    ctx.lineWidth = 0.8;
+    for (let lx = bcx - 2; lx <= bcx + 3; lx += 2) {
+      ctx.beginPath();
+      ctx.moveTo(lx, bcy - 2.5);
+      ctx.lineTo(lx, bcy + 2.5);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
   function drawPlayers(play) {
     for (const [name, pd] of Object.entries(play.players)) {
       const ghosted = highlightPlayer && highlightPlayer !== name;
@@ -740,9 +903,14 @@
     }
   }
 
+  // Labels made redundant when the ball shows where it goes
+  const BALL_REDUNDANT_KEYWORDS = ['PITCH', 'HANDOFF', 'LATERAL', 'BALL CARRIER'];
+
   function drawSpecialLabels(play) {
     if (!play.specialLabels) return;
     for (const sl of play.specialLabels) {
+      // Hide labels whose meaning is visually replaced by ball movement
+      if (showBall && BALL_REDUNDANT_KEYWORDS.some(kw => sl.text.toUpperCase().includes(kw))) continue;
       const [cx, cy] = fieldToCanvas(sl.x, sl.y);
       drawLabel(cx, cy, sl.text, sl.color, 0.9);
 
@@ -1121,6 +1289,14 @@
       setTimeout(() => {
         document.getElementById('play-notes').textContent = PLAYS[currentPlayIdx].notes || '';
       }, 2000);
+      drawFrame();
+    });
+
+    const ballBtn = document.getElementById('btn-ball');
+    ballBtn.style.opacity = '0.4';
+    ballBtn.addEventListener('click', () => {
+      showBall = !showBall;
+      ballBtn.style.opacity = showBall ? '1' : '0.4';
       drawFrame();
     });
 

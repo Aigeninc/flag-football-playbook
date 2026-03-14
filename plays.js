@@ -33,6 +33,10 @@ const PLAYS = [
     },
     defense: [[10, 5], [17.5, 8], [25, 5], [8, 13], [27, 13]],
     timing: { 1: 1.5, 2: 2.0, 3: 3.0, 4: 4.0 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 1.5, type: 'throw' },
+    ],
   },
 
   // ── 2. QUICK OUT ───────────────────────────────────────────────────────
@@ -54,6 +58,10 @@ const PLAYS = [
     },
     defense: [[10, 4], [17.5, 7], [25, 4], [7, 11], [28, 11]],
     timing: { 1: 0.8, 2: 1.5, 3: 2.5, 4: 3.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Marshall', time: 0.8, type: 'throw' },
+    ],
   },
 
   // ── 3. FLOOD RIGHT ─────────────────────────────────────────────────────
@@ -75,6 +83,10 @@ const PLAYS = [
     },
     defense: [[8, 7], [17, 7], [26, 5], [10, 14], [28, 12]],
     timing: { 1: 1.0, 2: 2.0, 3: 3.5, 4: 4.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 1.0, type: 'throw' },
+    ],
   },
 
   // ── 4. REVERSE ─────────────────────────────────────────────────────────
@@ -99,6 +111,11 @@ const PLAYS = [
     },
     defense: [[10, 5], [17.5, 7], [25, 5], [7, 12], [28, 12]],
     timing: {},
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Cooper', time: 0.5, type: 'handoff' },
+      { from: 'Cooper', to: 'Marshall', time: 1.5, type: 'lateral' },
+    ],
     specialLabels: [
       { x: 15, y: -5, text: 'PITCH', color: '#ff6600' },
       { x: 3, y: 19, text: '★ BALL CARRIER', color: '#f59e0b' },
@@ -124,6 +141,10 @@ const PLAYS = [
     },
     defense: [[10, 5], [17.5, 6], [25, 5], [7, 12], [28, 12]],
     timing: { 1: 1.0, 2: 2.0, 3: 3.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Marshall', time: 0.5, type: 'handoff' },
+    ],
     specialLabels: [
       { x: 27, y: 1, text: 'OPT 1: RUN', color: '#f59e0b' },
       { x: 10, y: 10, text: 'OPT 2: SLANT or\nBRAELYN RUNS', color: '#2dd4bf' },
@@ -151,6 +172,10 @@ const PLAYS = [
     },
     defense: [[10, 4], [17.5, 6], [25, 4], [8, 9], [27, 9]],
     timing: { 1: 0.8, 2: 1.0, 3: 2.0, 4: 3.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 0.8, type: 'throw' },
+    ],
   },
 
   // ── 7. FLAT-WHEEL ──────────────────────────────────────────────────────
@@ -174,6 +199,10 @@ const PLAYS = [
     },
     defense: [[10, 3], [17.5, 5], [25, 3], [6, 10], [29, 10]],
     timing: { 1: 2.5, 2: 1.5, 3: 1.0, 4: 4.0 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Marshall', time: 2.5, type: 'throw' },
+    ],
   },
 
   // ── 8. BRAELYN LATERAL ─────────────────────────────────────────────────
@@ -196,6 +225,11 @@ const PLAYS = [
     },
     defense: [[10, 5], [17.5, 7], [25, 5], [7, 13], [28, 13]],
     timing: { 1: 1.5, 2: 2.0, 3: 3.0, 4: 4.0 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Marshall', time: 0.5, type: 'lateral' },
+      { from: 'Marshall', to: 'Braelyn', time: 1.5, type: 'throw' },
+    ],
     specialLabels: [
       { x: 17.5, y: -3, text: 'LATERAL', color: '#ff6600', toX: 22, toY: -5 },
     ],
@@ -220,6 +254,10 @@ const PLAYS = [
     },
     defense: [[8, 5], [17, 7], [27, 7], [7, 12], [25, 14]],
     timing: { 1: 1.0, 2: 2.0, 3: 3.5, 4: 4.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Cooper', time: 1.0, type: 'throw' },
+    ],
   },
 
   // ── 10. HITCH & GO ─────────────────────────────────────────────────────
@@ -243,6 +281,10 @@ const PLAYS = [
     },
     defense: [[10, 4], [17.5, 7], [25, 4], [8, 12], [27, 12]],
     timing: { 1: 3.0, 2: 1.5, 3: 2.5, 4: 4.0 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 3.0, type: 'throw' },
+    ],
   },
 
   // ── 11. SCREEN ─────────────────────────────────────────────────────────
@@ -265,6 +307,10 @@ const PLAYS = [
     },
     defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
     timing: { 1: 2.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Cooper', time: 2.5, type: 'throw' },
+    ],
     specialLabels: [
       { x: 19.5, y: -1, text: 'PUMP FAKE', color: '#1a1a1a' },
     ],
@@ -292,6 +338,10 @@ const PLAYS = [
     },
     defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
     timing: { 1: 1.5, 2: 2.0, 3: 3.0, 4: 4.0 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 1.5, type: 'throw' },
+    ],
   },
 
   // ── 13. FADE ───────────────────────────────────────────────────────────
@@ -314,6 +364,10 @@ const PLAYS = [
     },
     defense: [[10, 4], [17.5, 6], [25, 4], [8, 9], [27, 9]],
     timing: { 1: 2.0, 2: 1.5, 3: 2.5, 4: 4.0 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Marshall', time: 2.0, type: 'throw' },
+    ],
     specialLabels: [
       { x: 34, y: 16, text: '★ TALLEST KID\nBACK CORNER', color: '#f59e0b' },
     ],

@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1a1a2e">
   <title>Flag Football Playbook</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
   <div id="app">
@@ -43,6 +43,7 @@
       <button class="ctrl-btn" id="btn-play" title="Play/Pause">▶</button>
       <button class="ctrl-btn" id="btn-mode" title="Toggle QB Study / Game Speed">👁️</button>
       <button class="ctrl-btn" id="btn-defense" title="Defense: Off / Man / Zone">🛡️</button>
+      <button class="ctrl-btn" id="btn-ball" title="Toggle ball animation">🏈</button>
       <div class="speed-group">
         <button class="speed-btn" data-speed="0.25">0.25x</button>
         <button class="speed-btn" data-speed="0.5">0.5x</button>
@@ -59,8 +60,8 @@
     </div>
   </div>
 
-  <script src="plays.js?v=14"></script>
-  <script src="app.js?v=14"></script>
+  <script src="plays.js?v=15"></script>
+  <script src="app.js?v=15"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(() => {});
