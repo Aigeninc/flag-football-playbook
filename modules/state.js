@@ -47,7 +47,7 @@ export const state = {
   highlightPlayer: null,
   animId: null,
   viewMode: 'qb',      // 'qb' = staggered reads, 'game' = simultaneous
-  defenseMode: 'off',  // 'off' | 'man' | 'zone'
+  defenseMode: 'off',  // 'off' | 'man' | 'zone' — hardcoded off, defense UI removed for simplicity
   showBall: false,
   sunlightMode: false,
   substitutions: {},   // { playIdx: { origName: replaceName } } — per-play overrides

@@ -182,22 +182,8 @@ export function buildControls() {
     drawFrame();
   });
 
-  const defBtn = document.getElementById('btn-defense');
-  defBtn.addEventListener('click', () => {
-    const modes = ['off', 'man', 'zone'];
-    const idx = (modes.indexOf(state.defenseMode) + 1) % modes.length;
-    state.defenseMode = modes[idx];
-    const labels = { off: '🛡️', man: '🔴 MAN', zone: '🔵 ZONE' };
-    defBtn.textContent = labels[state.defenseMode];
-    document.getElementById('play-notes').textContent =
-      state.defenseMode === 'off' ? (PLAYS[state.currentPlayIdx].notes || '') :
-      state.defenseMode === 'man' ? 'MAN DEFENSE — each defender follows a receiver' :
-      'ZONE DEFENSE — defenders guard areas, react to nearby routes';
-    setTimeout(() => {
-      document.getElementById('play-notes').textContent = PLAYS[state.currentPlayIdx].notes || '';
-    }, 2000);
-    drawFrame();
-  });
+  // Defense toggle removed — defenseMode stays 'off' for simplified youth coaching UI
+  // Data preserved in play definitions for future use
 
   const ballBtn = document.getElementById('btn-ball');
   ballBtn.style.opacity = '0.4';
