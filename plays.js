@@ -1,4 +1,4 @@
-// plays.js — 16 flag football plays (13 base + 3 mirror/counter plays)
+// plays.js — 25 flag football plays (16 base + 9 new: run game + misdirection combos)
 // Coordinates: X = 0-35 (sideline to sideline), Y = negative behind LOS, positive downfield
 // LOS is at Y=0
 
@@ -10,6 +10,7 @@ const PLAYERS = {
   'Cooper':   { color: '#2dd4bf', role: 'WR/RB' },
   'Jordy':    { color: '#2563eb', role: 'Sub' },
   'Zeke':     { color: '#ff6600', role: 'Sub' },
+  'Mason':    { color: '#22c55e', role: 'RB/Decoy' },
 };
 
 const PLAYS = [
@@ -439,6 +440,290 @@ const PLAYS = [
     specialLabels: [
       { x: 8, y: 3, text: 'FAKE SLANT', color: '#dc2626' },
       { x: 1, y: 17, text: '★ DB BITES SLANT\nGREYSON GONE', color: '#dc2626' },
+    ],
+  },
+
+  // ── 17. JET SWEEP ──────────────────────────────────────────────────────
+  // KEY play for new misdirection offense — Greyson motions L→R, takes handoff, sprints right edge
+  {
+    name: 'Jet Sweep',
+    formation: 'Spread',
+    isRunPlay: true,
+    whenToUse: [
+      'KEY misdirection run — new offense',
+      'Defense over-pursuing or crashing inside',
+      'Greyson speed on right edge — nobody can catch him'
+    ],
+    notes: 'Greyson motions L→R pre-snap. Mason fakes up middle. Marshall go route pulls safety. SPRINT to edge.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [[20, -2]], label: 'HANDOFF', read: 0, dashed: true },
+      Lenox:    { pos: [17.5, 0],  route: [[23, 3], [28, 5]], label: '', read: 0, dashed: true },
+      Greyson:  { pos: [21, -2],   route: [[26, -1], [33, 2], [35, 10]], label: 'JET SWEEP!', read: 0, dashed: false,
+                  motion: { from: [4, -1], to: [21, -2] } },
+      Marshall: { pos: [3, 0],     route: [[3, 18]], label: 'GO (pull safety)', read: 0, dashed: false },
+      Cooper:   { pos: [31, 0],    route: [[31, 8]], label: 'GO (clear)', read: 0, dashed: true },
+      Mason:    { pos: [21, -6],   route: [[17.5, -3], [17.5, 5]], label: 'FAKE RB', read: 0, dashed: true },
+    },
+    defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
+    timing: {},
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 0.5, type: 'handoff' },
+    ],
+    specialLabels: [
+      { x: 17.5, y: 4, text: 'FAKE UP MIDDLE', color: '#22c55e' },
+      { x: 35, y: 11, text: '★ GREYSON\nRIGHT EDGE', color: '#dc2626' },
+    ],
+  },
+
+  // ── 18. RB DRAW ────────────────────────────────────────────────────────
+  // Misdirection run: everything looks like pass, middle vacated, Greyson delayed handoff
+  {
+    name: 'RB Draw',
+    formation: 'Spread',
+    isRunPlay: true,
+    whenToUse: [
+      'Defense in all-out pass rush — nobody home in middle',
+      'Everything looks like a pass → middle vacated',
+      'Counter after throwing a lot — make them pay for rushing'
+    ],
+    notes: 'Braelyn FAKES drop-back pass. Marshall + Cooper sell go routes. Greyson DELAYED handoff up middle.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [[17.5, -6]], label: 'FAKE PASS', read: 0, dashed: true },
+      Lenox:    { pos: [17.5, 0],  route: [], label: '', read: 0, dashed: false },
+      Greyson:  { pos: [21, -5],   route: [[18, -3], [17.5, 2], [17.5, 12]], label: 'DRAW!', read: 0, dashed: false, delay: 1.5 },
+      Marshall: { pos: [3, 0],     route: [[3, 18]], label: 'GO (sell pass)', read: 0, dashed: true },
+      Cooper:   { pos: [31, 0],    route: [[31, 18]], label: 'GO (sell pass)', read: 0, dashed: true },
+    },
+    defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
+    timing: {},
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 1.5, type: 'handoff' },
+    ],
+    specialLabels: [
+      { x: 17.5, y: -7, text: 'FAKE DROP BACK', color: '#1a1a1a' },
+      { x: 17.5, y: 13, text: '★ MIDDLE VACATED\nGREYSON UNTOUCHED', color: '#f59e0b' },
+    ],
+  },
+
+  // ── 19. END AROUND ─────────────────────────────────────────────────────
+  // Cooper motions behind QB pre-snap, takes handoff, runs right edge
+  {
+    name: 'End Around',
+    formation: 'Spread',
+    isRunPlay: true,
+    whenToUse: [
+      'Defense over-pursues left side',
+      'Counter after running Reverse — keeps defense honest',
+      "Cooper is fastest — get him the ball on the edge"
+    ],
+    notes: 'Cooper motions from right BEHIND QB pre-snap. Marshall + Greyson sell fake LEFT. Cooper takes handoff RIGHT edge.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [[20, -4]], label: 'HANDOFF', read: 0, dashed: true },
+      Lenox:    { pos: [17.5, 0],  route: [[23, 3], [28, 5]], label: '', read: 0, dashed: true },
+      Greyson:  { pos: [31, 0],    route: [[31, 5], [25, 2]], label: 'FAKE LEFT', read: 0, dashed: true },
+      Marshall: { pos: [3, 0],     route: [[3, 5], [8, 2]], label: 'FAKE LEFT', read: 0, dashed: true },
+      Cooper:   { pos: [20, -4],   route: [[26, -3], [33, -1], [35, 5], [34, 14]], label: 'END AROUND!', read: 0, dashed: false,
+                  motion: { from: [31, -1], to: [20, -4] } },
+    },
+    defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
+    timing: {},
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Cooper', time: 0.5, type: 'handoff' },
+    ],
+    specialLabels: [
+      { x: 3, y: 7, text: 'FAKE LEFT', color: '#ff6600' },
+      { x: 34, y: 16, text: '★ COOPER\nRIGHT EDGE', color: '#2dd4bf' },
+    ],
+  },
+
+  // ── 20. RPO FLOOD ──────────────────────────────────────────────────────
+  // Run-pass option: Greyson run right OR keep/throw flood (Marshall corner, Cooper out)
+  {
+    name: 'RPO Flood',
+    formation: 'Twins Right',
+    whenToUse: [
+      'Run OR pass — force defense to choose',
+      'Zone defense — flood combination beats zone',
+      'Want Braelyn making live reads at the mesh point'
+    ],
+    notes: 'OPT 1: Give to Greyson → run right. OPT 2: Keep → read Flood. Marshall corner deep, Cooper out mid.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
+      Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 3, dashed: true },
+      Greyson:  { pos: [22, -5],   route: [[26, -3], [33, 0], [35, 8]], label: 'RUN RIGHT', read: 0, dashed: false },
+      Marshall: { pos: [27, 0],    route: [[27, 6], [33, 16]], label: 'CORNER', read: 1, dashed: false },
+      Cooper:   { pos: [33, 0],    route: [[33, 5], [35, 5]], label: 'OUT', read: 2, dashed: false },
+    },
+    defense: [[8, 7], [17, 7], [26, 5], [10, 14], [28, 12]],
+    timing: { 1: 1.0, 2: 2.0, 3: 3.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 0.3, type: 'handoff' },
+    ],
+    specialLabels: [
+      { x: 33, y: 9, text: 'OPT 1: GIVE\nGREYSON RUN', color: '#dc2626' },
+      { x: 33, y: 17, text: 'OPT 2: KEEP\nMARSHALL CORNER', color: '#f59e0b' },
+      { x: 35, y: 6, text: 'OPT 3: COOPER OUT', color: '#2dd4bf' },
+    ],
+  },
+
+  // ── 21. TRIPLE OPTION ──────────────────────────────────────────────────
+  // Max flexibility: run right → lateral back → pass Cooper deep or Marshall out
+  {
+    name: 'Triple Option',
+    formation: 'Spread',
+    whenToUse: [
+      'Maximum flexibility — 3 answers on every snap',
+      'Defense is guessing — make them wrong every time',
+      'Greyson healthy and fast for perimeter threat'
+    ],
+    notes: 'OPT 1: Greyson run right. If stopped → lateral back to Braelyn. OPT 2: Cooper go deep. OPT 3: Marshall out 8yd.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [[14, -2], [10, -2]], label: 'READS', read: 0, dashed: true },
+      Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 3, dashed: true },
+      Greyson:  { pos: [22, -5],   route: [[26, -3], [33, 0], [35, 8]], label: 'RUN RIGHT', read: 0, dashed: false },
+      Cooper:   { pos: [31, 0],    route: [[31, 18]], label: 'GO DEEP', read: 1, dashed: false },
+      Marshall: { pos: [3, 0],     route: [[3, 8], [5, 8]], label: 'OUT 8yd', read: 2, dashed: false },
+    },
+    defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
+    timing: { 1: 0.5, 2: 2.0, 3: 2.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 0.3, type: 'handoff' },
+    ],
+    specialLabels: [
+      { x: 33, y: 9, text: 'OPT 1: RUN', color: '#dc2626' },
+      { x: 10, y: -1, text: 'LATERAL BACK\nIF STOPPED', color: '#ff6600' },
+      { x: 31, y: 19, text: 'OPT 2: GO DEEP', color: '#2dd4bf' },
+      { x: 5, y: 9, text: 'OPT 3: OUT 8yd', color: '#f59e0b' },
+    ],
+  },
+
+  // ── 22. BUBBLE SCREEN ──────────────────────────────────────────────────
+  // Short pass behind LOS — almost a handoff through the air
+  {
+    name: 'Bubble Screen',
+    formation: 'Spread',
+    whenToUse: [
+      'Defense pressing tight coverage — give them the yards',
+      'Need a quick gain in space — catch and run',
+      "Get Cooper or Greyson the ball immediately with blockers ahead"
+    ],
+    notes: 'Fastest completion — almost a handoff through air. Cooper catches 2yd behind LOS. Greyson + Marshall clear space.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
+      Lenox:    { pos: [17.5, 0],  route: [], label: '', read: 0, dashed: false },
+      Greyson:  { pos: [4, 0],     route: [[4, 18]], label: 'GO (clear)', read: 0, dashed: true },
+      Marshall: { pos: [31, 0],    route: [[31, 10]], label: 'GO (clear)', read: 0, dashed: true },
+      Cooper:   { pos: [27, -2],   route: [[27, -2], [32, 2], [34, 8]], label: 'BUBBLE!', read: 1, dashed: false,
+                  motion: { from: [33, 0], to: [27, -2] } },
+    },
+    defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
+    timing: { 1: 0.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Cooper', time: 0.5, type: 'throw' },
+    ],
+    specialLabels: [
+      { x: 28, y: -3, text: '★ CATCH BEHIND LOS\nRUN IN SPACE', color: '#2dd4bf' },
+    ],
+  },
+
+  // ── 23. QUICK HITCH ────────────────────────────────────────────────────
+  // 3 steps upfield, turn — Braelyn delivers on 1-count
+  {
+    name: 'Quick Hitch',
+    formation: 'Spread',
+    whenToUse: [
+      'Need a guaranteed completion',
+      'Greyson 1-on-1 — 1-count beats any coverage',
+      'Short yardage — pick up 5-6 yards quickly'
+    ],
+    notes: 'Greyson takes 3 steps upfield, TURNS. Braelyn delivers immediately — 1-count throw.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
+      Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 3, dashed: true },
+      Greyson:  { pos: [4, 0],     route: [[4, 5], [4, 4]], label: 'HITCH', read: 1, dashed: false },
+      Marshall: { pos: [31, 0],    route: [[31, 14]], label: 'GO (clear)', read: 0, dashed: true },
+      Cooper:   { pos: [17.5, -5.5], route: [[17.5, -3.5], [28, 1]], label: 'FLAT (clear)', read: 2, dashed: true },
+    },
+    defense: [[10, 4], [17.5, 6], [25, 4], [8, 9], [27, 9]],
+    timing: { 1: 1.0, 2: 2.0, 3: 3.0 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Greyson', time: 1.0, type: 'throw' },
+    ],
+    specialLabels: [
+      { x: 4, y: 6, text: '★ 3 STEPS\nTURN & CATCH', color: '#dc2626' },
+    ],
+  },
+
+  // ── 24. JET BUBBLE ─────────────────────────────────────────────────────
+  // LOOKS LIKE Jet Sweep! Greyson motions right, defense chases, ball goes LEFT to Cooper bubble
+  {
+    name: 'Jet Bubble',
+    formation: 'Spread',
+    whenToUse: [
+      'After Jet Sweep — defense chasing Greyson motion hard',
+      'Defense overcommits to motion side',
+      'Misdirection combo — motion right, ball goes LEFT'
+    ],
+    notes: 'LOOKS LIKE Jet Sweep! Greyson motions L→R. Defense chases RIGHT. Braelyn throws Bubble to Cooper going LEFT.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
+      Lenox:    { pos: [17.5, 0],  route: [], label: '', read: 0, dashed: false },
+      Greyson:  { pos: [21, -2],   route: [[26, -1], [33, 2]], label: 'JET FAKE', read: 0, dashed: true,
+                  motion: { from: [4, -1], to: [21, -2] } },
+      Marshall: { pos: [3, 0],     route: [[3, 14]], label: 'GO (clear)', read: 0, dashed: true },
+      Cooper:   { pos: [8, -2],    route: [[8, -2], [3, 2], [1, 8]], label: 'BUBBLE!', read: 1, dashed: false,
+                  motion: { from: [14, 0], to: [8, -2] } },
+    },
+    defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
+    timing: { 1: 0.5 },
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Cooper', time: 0.5, type: 'throw' },
+    ],
+    specialLabels: [
+      { x: 28, y: 3, text: 'DEFENSE\nCHASES RIGHT →', color: '#ff6600' },
+      { x: 1, y: 9, text: '★ BALL GOES LEFT\nCOOPER WIDE OPEN', color: '#2dd4bf' },
+    ],
+  },
+
+  // ── 25. FAKE JET DRAW ──────────────────────────────────────────────────
+  // LOOKS LIKE Jet Sweep! Greyson motions + fake handoff, Mason draws up vacated middle
+  {
+    name: 'Fake Jet Draw',
+    formation: 'Spread',
+    isRunPlay: true,
+    whenToUse: [
+      'After Jet Sweep — defense crashes hard on Greyson motion',
+      'Middle is wide open — everyone committed to edge',
+      'Mason big body sells the delay perfectly'
+    ],
+    notes: 'LOOKS LIKE Jet Sweep! Greyson motions, Braelyn FAKES handoff. Mason delayed DRAW up middle. Everyone chases Greyson = untouched.',
+    players: {
+      Braelyn:  { pos: [17.5, -3],   route: [[20, -2]], label: 'FAKE HANDOFF', read: 0, dashed: true },
+      Lenox:    { pos: [17.5, 0],  route: [], label: '', read: 0, dashed: false },
+      Greyson:  { pos: [21, -2],   route: [[26, -1], [33, 2]], label: 'FAKE JET!', read: 0, dashed: true,
+                  motion: { from: [4, -1], to: [21, -2] },
+                  fakeSegment: [[21, -2], [26, -1]] },
+      Marshall: { pos: [3, 0],     route: [[3, 14]], label: 'GO (decoy)', read: 0, dashed: true },
+      Cooper:   { pos: [31, 0],    route: [[31, 14]], label: 'GO (decoy)', read: 0, dashed: true },
+      Mason:    { pos: [17.5, -6], route: [[17.5, -3], [17.5, 2], [17.5, 12]], label: 'DRAW!', read: 0, dashed: false, delay: 1.5 },
+    },
+    defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
+    timing: {},
+    ballPath: [
+      { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
+      { from: 'Braelyn', to: 'Mason', time: 1.5, type: 'handoff' },
+    ],
+    specialLabels: [
+      { x: 20, y: -2, text: 'FAKE JET\nHANDOFF', color: '#ff6600' },
+      { x: 17.5, y: 13, text: '★ MASON UNTOUCHED\nMIDDLE VACATED', color: '#22c55e' },
     ],
   },
 

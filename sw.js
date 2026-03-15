@@ -1,12 +1,24 @@
 // Service Worker for offline support
-const CACHE_NAME = 'playbook-v23';
+// Update CACHE_VERSION when assets change to bust old caches
+const CACHE_VERSION = '20260314-phase3';
+const CACHE_NAME = 'playbook-' + CACHE_VERSION;
+
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=23',
-  './app.js?v=23',
-  './plays.js?v=23',
+  './style.css',
   './manifest.json',
+  './plays.js',
+  './app.js',
+  './modules/state.js',
+  './modules/renderer.js',
+  './modules/animation.js',
+  './modules/ui.js',
+  './modules/coach.js',
+  './modules/queue.js',
+  './modules/touch.js',
+  './modules/editor.js',
+  './modules/roster.js',
 ];
 
 self.addEventListener('install', e => {
