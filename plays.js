@@ -23,14 +23,14 @@ const PLAYS = [
       'Need a quick, safe completion',
       'Defense is tight on outside routes'
     ],
-    notes: 'SUB: Jordy can replace Marshall at RB (flat)',
+    notes: 'SUB: Jordy can replace Cooper at RB (flat)',
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
       Lenox:    { pos: [17.5, 0],  route: [[22, 3], [27, 5]], label: 'CHECK', read: 4, dashed: true },
       Greyson:  { pos: [4, 0],     route: [[4, 5], [32, 5]], label: 'MESH', read: 1, dashed: false },
-      Cooper:   { pos: [24, -1],    route: [[24, 6], [3, 6]], label: 'MESH', read: 2, dashed: false,
+      Marshall: { pos: [24, -1],    route: [[24, 6], [3, 6]], label: 'MESH', read: 2, dashed: false,
                   motion: { from: [31, -1], to: [24, -1] } },
-      Marshall: { pos: [17.5, -5.5], route: [[17.5, -3.5], [6, 1]], label: 'FLAT', read: 3, dashed: false },
+      Cooper:   { pos: [17.5, -5.5], route: [[17.5, -3.5], [6, 1]], label: 'FLAT', read: 3, dashed: false },
     },
     defense: [[10, 5], [17.5, 8], [25, 5], [8, 13], [27, 13]],
     timing: { 1: 1.5, 2: 2.0, 3: 3.0, 4: 4.0 },
@@ -103,14 +103,14 @@ const PLAYS = [
       "They're keying on receivers — trick them",
       'Need a big misdirection play'
     ],
-    notes: 'SUB: Jordy can replace Greyson (decoy WR2). RUN PLAY — no read progression.',
+    notes: 'SUB: Jordy can replace Cooper (decoy WR2). RUN PLAY — no read progression.',
     isRunPlay: true,
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [[21, -4]], label: 'HANDOFF', read: 0, dashed: true },
       Lenox:    { pos: [17.5, 0],  route: [[23, 3], [28, 5]], label: 'CHECK', read: 0, dashed: true },
-      Greyson:  { pos: [31, 0],    route: [[31, 18]], label: 'GO (decoy)', read: 0, dashed: false },
+      Cooper:   { pos: [31, 0],    route: [[31, 18]], label: 'GO (decoy)', read: 0, dashed: false },
       Marshall: { pos: [17.5, -5.5], route: [[21, -4], [26, -3.5]], label: 'RUN RIGHT', read: 0, dashed: true },
-      Cooper:   { pos: [26, -1],     route: [[20, -3], [15, -5], [10, -4], [5, -2], [2, 2], [1, 8], [2, 18]],
+      Greyson:  { pos: [26, -1],     route: [[20, -3], [15, -5], [10, -4], [5, -2], [2, 2], [1, 8], [2, 18]],
                   label: 'REVERSE!', read: 0, dashed: false,
                   motion: { from: [4, -1], to: [26, -1] } },
     },
@@ -119,11 +119,11 @@ const PLAYS = [
     ballPath: [
       { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
       { from: 'Braelyn', to: 'Marshall', time: 0.5, type: 'handoff' },
-      { from: 'Marshall', to: 'Cooper', time: 1.5, type: 'lateral' },
+      { from: 'Marshall', to: 'Greyson', time: 1.5, type: 'lateral' },
     ],
     specialLabels: [
       { x: 15, y: -5, text: 'PITCH', color: '#ff6600' },
-      { x: 3, y: 19, text: '★ BALL CARRIER', color: '#2dd4bf' },
+      { x: 3, y: 19, text: '★ BALL CARRIER', color: '#dc2626' },
     ],
   },
 
@@ -140,8 +140,8 @@ const PLAYS = [
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [[19, -4]], label: '', read: 0, dashed: true },
       Lenox:    { pos: [17.5, 0],  route: [[23, 3], [28, 5]], label: 'CHECK', read: 2, dashed: true },
-      Cooper:   { pos: [4, 0],     route: [[4, 2], [14, 7]], label: 'SLANT', read: 1, dashed: false },
-      Greyson:  { pos: [31, 0],    route: [[31, 14]], label: 'GO (clear)', read: 0, dashed: false },
+      Greyson:  { pos: [4, 0],     route: [[4, 2], [14, 7]], label: 'SLANT', read: 1, dashed: false },
+      Cooper:   { pos: [31, 0],    route: [[31, 14]], label: 'GO (clear)', read: 0, dashed: false },
       Marshall: { pos: [17.5, -5.5], route: [[19, -4], [26, -1]], label: 'RUN?', read: 0, dashed: true },
     },
     defense: [[10, 5], [17.5, 6], [25, 5], [7, 12], [28, 12]],
@@ -193,14 +193,14 @@ const PLAYS = [
       'Goal line — wheel beats flat coverage',
       'Defense is sitting on short stuff'
     ],
-    notes: 'SUB: Zeke can play RB (flat decoy) when ahead',
+    notes: 'SUB: Zeke can replace Cooper (flat decoy) when ahead',
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
       Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 4, dashed: true },
-      Cooper:   { pos: [4, 0],     route: [[4, 2], [12, 6]], label: 'SLANT', read: 2, dashed: false },
+      Greyson:  { pos: [4, 0],     route: [[4, 2], [12, 6]], label: 'SLANT', read: 2, dashed: false },
       Marshall: { pos: [31, 0],    route: [[33, 2], [33, 8], [33, 16]], label: 'WHEEL!', read: 1, dashed: false,
                   fakeSegment: [[31, 0], [33, 2]] },
-      Greyson:  { pos: [22, -5],     route: [[22, -2], [32, 2]], label: 'FLAT (decoy)', read: 3, dashed: false },
+      Cooper:   { pos: [22, -5],     route: [[22, -2], [32, 2]], label: 'FLAT (decoy)', read: 3, dashed: false },
     },
     defense: [[10, 3], [17.5, 5], [25, 3], [6, 10], [29, 10]],
     timing: { 1: 2.0, 2: 1.5, 3: 1.0, 4: 4.0 },
@@ -249,19 +249,19 @@ const PLAYS = [
       'Mirror of Flood Right — keep them guessing',
       'Zone defense — 3 levels beat zone'
     ],
-    notes: 'SUB: Jordy can replace Greyson at RB (flat)',
+    notes: 'SUB: Jordy can replace Cooper at RB (flat)',
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
       Lenox:    { pos: [17.5, 0],  route: [[23, 3], [28, 5]], label: 'CHECK', read: 4, dashed: true },
-      Cooper:   { pos: [8, 0],     route: [[8, 6], [2, 16]], label: 'CORNER', read: 1, dashed: false },
+      Greyson:  { pos: [8, 0],     route: [[8, 6], [2, 16]], label: 'CORNER', read: 1, dashed: false },
       Marshall: { pos: [3, 0],     route: [[3, 8], [1, 8]], label: 'OUT', read: 2, dashed: false },
-      Greyson:  { pos: [17.5, -5.5], route: [[13, -2], [3, 2]], label: 'FLAT', read: 3, dashed: false },
+      Cooper:   { pos: [17.5, -5.5], route: [[13, -2], [3, 2]], label: 'FLAT', read: 3, dashed: false },
     },
     defense: [[8, 5], [17, 7], [27, 7], [7, 12], [25, 14]],
     timing: { 1: 1.0, 2: 2.0, 3: 3.5, 4: 4.5 },
     ballPath: [
       { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
-      { from: 'Braelyn', to: 'Cooper', time: 1.0, type: 'throw' },
+      { from: 'Braelyn', to: 'Greyson', time: 1.0, type: 'throw' },
     ],
   },
 
@@ -274,15 +274,15 @@ const PLAYS = [
       'Counter after running Quick Out / Mesh',
       'Need a deep shot — DB bites on fake hitch'
     ],
-    notes: 'Give to Greyson or Cooper (fastest). No subs on WR1.',
+    notes: 'Greyson fakes hitch then explodes deep. Marshall motions in for hitch. No subs on WR1.',
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
       Lenox:    { pos: [17.5, 0],  route: [[22, 3], [28, 5]], label: 'CHECK', read: 4, dashed: true },
       Greyson:  { pos: [4, 0],     route: [[4, 5], [4, 4], [3.5, 3.5], [4, 4], [4, 5], [4, 20]], label: 'GO!', read: 1, dashed: false,
                   fakeSegment: [[4, 0], [4, 5]], fakeLabel: 'FAKE HITCH' },
-      Cooper:   { pos: [11, -1],    route: [[11, 5]], label: 'HITCH', read: 2, dashed: false,
+      Marshall: { pos: [11, -1],    route: [[11, 5]], label: 'HITCH', read: 2, dashed: false,
                   motion: { from: [31, -1], to: [11, -1] } },
-      Marshall: { pos: [17.5, -5.5], route: [[17.5, -3.5], [6, 1]], label: 'FLAT', read: 3, dashed: false },
+      Cooper:   { pos: [17.5, -5.5], route: [[17.5, -3.5], [6, 1]], label: 'FLAT', read: 3, dashed: false },
     },
     defense: [[10, 4], [17.5, 7], [25, 4], [8, 12], [27, 12]],
     timing: { 1: 3.0, 2: 1.5, 3: 2.5, 4: 4.0 },
@@ -368,8 +368,8 @@ const PLAYS = [
       Braelyn:  { pos: [17.5, -3],   route: [], label: '', read: 0, dashed: false },
       Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 4, dashed: true },
       Marshall: { pos: [31, 0],    route: [[33, 5], [34, 14]], label: 'FADE!', read: 1, dashed: false },
-      Cooper:   { pos: [4, 0],     route: [[4, 2], [12, 6]], label: 'SLANT', read: 2, dashed: false },
-      Greyson:  { pos: [17.5, -5.5], route: [[17.5, -3.5], [28, 1]], label: 'FLAT', read: 3, dashed: false },
+      Greyson:  { pos: [4, 0],     route: [[4, 2], [12, 6]], label: 'SLANT', read: 2, dashed: false },
+      Cooper:   { pos: [17.5, -5.5], route: [[17.5, -3.5], [28, 1]], label: 'FLAT', read: 3, dashed: false },
     },
     defense: [[10, 4], [17.5, 6], [25, 4], [8, 9], [27, 9]],
     timing: { 1: 2.0, 2: 1.5, 3: 2.5, 4: 4.0 },
@@ -516,26 +516,26 @@ const PLAYS = [
     whenToUse: [
       'Defense over-pursues left side',
       'Counter after running Reverse — keeps defense honest',
-      "Cooper is fastest — get him the ball on the edge"
+      "Greyson is fastest — get him the ball on the edge"
     ],
-    notes: 'Cooper motions from right BEHIND QB pre-snap. Marshall + Greyson sell fake LEFT. Cooper takes handoff RIGHT edge.',
+    notes: 'Greyson motions from right BEHIND QB pre-snap. Marshall + Cooper sell fake LEFT. Greyson takes handoff RIGHT edge.',
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [[20, -4]], label: 'HANDOFF', read: 0, dashed: true },
       Lenox:    { pos: [17.5, 0],  route: [[23, 3], [28, 5]], label: '', read: 0, dashed: true },
-      Greyson:  { pos: [31, 0],    route: [[31, 5], [25, 2]], label: 'FAKE LEFT', read: 0, dashed: true },
+      Cooper:   { pos: [31, 0],    route: [[31, 5], [25, 2]], label: 'FAKE LEFT', read: 0, dashed: true },
       Marshall: { pos: [3, 0],     route: [[3, 5], [8, 2]], label: 'FAKE LEFT', read: 0, dashed: true },
-      Cooper:   { pos: [20, -4],   route: [[26, -3], [33, -1], [35, 5], [34, 14]], label: 'END AROUND!', read: 0, dashed: false,
+      Greyson:  { pos: [20, -4],   route: [[26, -3], [33, -1], [35, 5], [34, 14]], label: 'END AROUND!', read: 0, dashed: false,
                   motion: { from: [31, -1], to: [20, -4] } },
     },
     defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
     timing: {},
     ballPath: [
       { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
-      { from: 'Braelyn', to: 'Cooper', time: 0.5, type: 'handoff' },
+      { from: 'Braelyn', to: 'Greyson', time: 0.5, type: 'handoff' },
     ],
     specialLabels: [
       { x: 3, y: 7, text: 'FAKE LEFT', color: '#ff6600' },
-      { x: 34, y: 16, text: '★ COOPER\nRIGHT EDGE', color: '#2dd4bf' },
+      { x: 34, y: 16, text: '★ GREYSON\nRIGHT EDGE', color: '#dc2626' },
     ],
   },
 
@@ -580,13 +580,13 @@ const PLAYS = [
       'Defense is guessing — make them wrong every time',
       'Greyson healthy and fast for perimeter threat'
     ],
-    notes: 'OPT 1: Greyson run right. If stopped → lateral back to Braelyn. OPT 2: Cooper go deep. OPT 3: Marshall out 8yd.',
+    notes: 'OPT 1: Greyson run right. If stopped → lateral back to Braelyn. OPT 2: Marshall go deep. OPT 3: Cooper out 8yd.',
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [[14, -2], [10, -2]], label: 'READS', read: 0, dashed: true },
       Lenox:    { pos: [17.5, 0],  route: [[12, 3], [7, 5]], label: 'CHECK', read: 3, dashed: true },
       Greyson:  { pos: [22, -5],   route: [[26, -3], [33, 0], [35, 8]], label: 'RUN RIGHT', read: 0, dashed: false },
-      Cooper:   { pos: [31, 0],    route: [[31, 18]], label: 'GO DEEP', read: 1, dashed: false },
-      Marshall: { pos: [3, 0],     route: [[3, 8], [5, 8]], label: 'OUT 8yd', read: 2, dashed: false },
+      Marshall: { pos: [31, 0],    route: [[31, 18]], label: 'GO DEEP', read: 1, dashed: false },
+      Cooper:   { pos: [3, 0],     route: [[3, 8], [5, 8]], label: 'OUT 8yd', read: 2, dashed: false },
     },
     defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
     timing: { 1: 0.5, 2: 2.0, 3: 2.5 },
@@ -597,8 +597,8 @@ const PLAYS = [
     specialLabels: [
       { x: 33, y: 9, text: 'OPT 1: RUN', color: '#dc2626' },
       { x: 10, y: -1, text: 'LATERAL BACK\nIF STOPPED', color: '#ff6600' },
-      { x: 31, y: 19, text: 'OPT 2: GO DEEP', color: '#2dd4bf' },
-      { x: 5, y: 9, text: 'OPT 3: OUT 8yd', color: '#f59e0b' },
+      { x: 31, y: 19, text: 'OPT 2: GO DEEP', color: '#f59e0b' },
+      { x: 5, y: 9, text: 'OPT 3: OUT 8yd', color: '#2dd4bf' },
     ],
   },
 
@@ -799,24 +799,24 @@ const PLAYS = [
       'Double-Back pass off run action',
       'ONE read — Marshall flat on bootleg side. Pre-determined throw.'
     ],
-    notes: 'SELL fake to Greyson right. Braelyn rolls out LEFT. Marshall releases to flat on left — ONLY target. Cooper clears with go route. ONE DECISION.',
+    notes: 'SELL fake to Greyson right. Braelyn rolls out LEFT. Cooper releases to flat on left — ONLY target. Marshall clears with go route. ONE DECISION.',
     players: {
       Braelyn:  { pos: [17.5, -3],   route: [[20, -4], [15, -2], [8, 2]], label: 'BOOT LEFT', read: 0, dashed: true },
       Lenox:    { pos: [17.5, 0],    route: [], label: '', read: 0, dashed: false },
       Greyson:  { pos: [12, -5],     route: [[18, -3], [24, -1]], label: 'FAKE CARRY', read: 0, dashed: true },
-      Marshall: { pos: [23, -5],     route: [[20, -3], [13, -1], [6, 2], [3, 4]], label: 'FLAT!', read: 1, dashed: false },
-      Cooper:   { pos: [4, 0],       route: [[4, 18]], label: 'GO (clear)', read: 0, dashed: true },
+      Cooper:   { pos: [23, -5],     route: [[20, -3], [13, -1], [6, 2], [3, 4]], label: 'FLAT!', read: 1, dashed: false },
+      Marshall: { pos: [4, 0],       route: [[4, 18]], label: 'GO (clear)', read: 0, dashed: true },
     },
     defense: [[10, 5], [17.5, 7], [25, 5], [8, 13], [27, 13]],
     timing: { 1: 2.0 },
     ballPath: [
       { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
       { from: 'Braelyn', to: 'Greyson', time: 0.4, type: 'handoff', fake: true },
-      { from: 'Braelyn', to: 'Marshall', time: 2.0, type: 'throw' },
+      { from: 'Braelyn', to: 'Cooper', time: 2.0, type: 'throw' },
     ],
     specialLabels: [
       { x: 22, y: -2, text: 'FAKE HANDOFF', color: '#ff6600' },
-      { x: 3, y: 5, text: '★ MARSHALL OPEN\nFLAT ON BOOT SIDE', color: '#f59e0b' },
+      { x: 3, y: 5, text: '★ COOPER OPEN\nFLAT ON BOOT SIDE', color: '#2dd4bf' },
     ],
   },
 
