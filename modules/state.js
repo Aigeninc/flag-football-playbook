@@ -70,6 +70,10 @@ export const state = {
   activeTeam: '1',     // '1' or '2'
   rotationCounts: {},  // { playerName: playCount } for equal playing time
 
+  // ── Defense View ──────────────────────────────────────────
+  defenseViewActive: false,  // true when viewing defensive plays
+  currentDefPlayIdx: 0,      // separate index for defense plays
+
   // ── Active Play Set (game day filter) ─────────────────────
   activePlaySet: null,  // null = show all, Set of play names = show only these
   activePlaySetEditing: false, // true when pick-mode is active

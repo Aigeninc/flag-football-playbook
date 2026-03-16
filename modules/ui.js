@@ -8,15 +8,33 @@ import {
 import { drawFrame } from './renderer.js';
 import { togglePlayPause, replay, updateTimer } from './animation.js';
 
-// selectPlay callback registered from app.js
+// selectPlay / selectDefPlay callbacks registered from app.js
 let _selectPlay = null;
+let _selectDefPlay = null;
 export function setSelectPlayFn(fn) { _selectPlay = fn; }
+export function setSelectDefPlayFn(fn) { _selectDefPlay = fn; }
 
 // ── Play Selector ─────────────────────────────────────────────
 
 export function buildPlaySelector() {
   const container = document.getElementById('play-selector');
   container.innerHTML = '';
+
+  // Defense mode: show defense plays only
+  if (state.defenseViewActive) {
+    DEFENSE_PLAYS.forEach((play, i) => {
+      const btn = document.createElement('button');
+      const isZone = play.concept === 'zone';
+      btn.className = 'play-btn def-play-btn' + (i === state.currentDefPlayIdx ? ' active def-active' : '');
+      btn.textContent = play.name;
+      btn.dataset.concept = play.concept;
+      btn.addEventListener('click', () => {
+        if (_selectDefPlay) _selectDefPlay(i);
+      });
+      container.appendChild(btn);
+    });
+    return;
+  }
 
   // Pick mode: show all plays with checkboxes to build active set
   if (state.activePlaySetEditing) {
@@ -225,6 +243,23 @@ export function makeSub(origName, replacementName) {
   drawFrame();
 }
 
+// ── Defense Toggle ────────────────────────────────────────────
+
+export function setupDefenseToggle(onToggle) {
+  const btn = document.getElementById('btn-defense');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    if (onToggle) onToggle();
+  });
+}
+
+export function updateDefenseToggleBtn() {
+  const btn = document.getElementById('btn-defense');
+  if (!btn) return;
+  btn.style.opacity = state.defenseViewActive ? '1' : '0.4';
+  btn.title = state.defenseViewActive ? 'Switch to Offense' : 'View Defensive Plays';
+}
+
 // ── Controls setup ────────────────────────────────────────────
 
 export function buildControls() {
@@ -280,6 +315,25 @@ export function buildControls() {
 // ── Info Panel ────────────────────────────────────────────────
 
 export function updateInfoPanel() {
+  if (state.defenseViewActive) {
+    const defPlay = DEFENSE_PLAYS[state.currentDefPlayIdx];
+    const isZone = defPlay.concept === 'zone';
+    const accentColor = isZone ? '#22c55e' : '#dc2626';
+    const panel = document.getElementById('info-panel');
+    panel.style.borderTopColor = accentColor;
+
+    document.getElementById('formation-label').innerHTML =
+      `<span style="color:${accentColor}">${defPlay.name}</span> — ${defPlay.vsFormation}`;
+    document.getElementById('when-to-use').innerHTML = defPlay.whenToUse
+      .map(b => `<span class="bullet" style="color:${accentColor}">•</span>${b}`).join('&nbsp;&nbsp;');
+    document.getElementById('play-notes').textContent = defPlay.notes || '';
+    return;
+  }
+
+  // Reset panel accent for offense
+  const panel = document.getElementById('info-panel');
+  panel.style.borderTopColor = '';
+
   const play = PLAYS[state.currentPlayIdx];
   document.getElementById('formation-label').textContent = 'Formation: ' + play.formation;
   document.getElementById('when-to-use').innerHTML = play.whenToUse

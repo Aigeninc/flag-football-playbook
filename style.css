@@ -1541,3 +1541,32 @@ body.sunlight .ctrl-btn.sunlight-active { background: #f5d742; color: #000; }
   min-width: 28px;
   text-align: center;
 }
+
+/* ── Defense Mode ────────────────────────────────────────── */
+
+/* Defense play buttons in the selector */
+.def-play-btn {
+  border-color: #4a2020;
+}
+.def-play-btn[data-concept="zone"] {
+  border-color: #1a3a1a;
+}
+.def-play-btn[data-concept="man"] {
+  border-color: #3a1a1a;
+}
+.def-play-btn.def-active {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+.def-play-btn[data-concept="zone"].def-active {
+  background: #22c55e;
+  color: #000;
+  border-color: #22c55e;
+}
+
+/* Info panel accent border when in defense mode */
+#info-panel {
+  border-top: 3px solid transparent;
+  transition: border-top-color 0.25s;
+}

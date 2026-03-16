@@ -70,16 +70,20 @@ export function togglePlayPause() {
     pauseAnimation();
   } else {
     if (state.animTime >= TOTAL_TIME) {
-      const play = PLAYS[state.currentPlayIdx];
-      state.animTime = getAnimStart(play);
+      state.animTime = state.defenseViewActive ? 0 : getAnimStart(PLAYS[state.currentPlayIdx]);
     }
     startAnimation();
   }
 }
 
 export function replay() {
-  const play = PLAYS[state.currentPlayIdx];
-  state.animTime = getAnimStart(play);
+  // Defense plays have no pre-snap motion — always start at 0
+  if (state.defenseViewActive) {
+    state.animTime = 0;
+  } else {
+    const play = PLAYS[state.currentPlayIdx];
+    state.animTime = getAnimStart(play);
+  }
   drawFrame();
   doUpdateTimer();
   startAnimation();

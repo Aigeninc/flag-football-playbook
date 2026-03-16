@@ -69,6 +69,13 @@ export function drawFrame() {
   const h = canvas.height / (window.devicePixelRatio || 1);
   ctx.clearRect(0, 0, w, h);
 
+  // Defense view — completely separate rendering path
+  if (state.defenseViewActive) {
+    const defPlay = DEFENSE_PLAYS[state.currentDefPlayIdx];
+    if (defPlay) drawDefenseFrame(defPlay);
+    return;
+  }
+
   if (state.editorActive && state.editorPlay) {
     // Edit mode — draw static editor view
     const play = state.editorPlay;
@@ -784,4 +791,286 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.lineTo(x, y + r);
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
+}
+
+// ── Defense Frame ─────────────────────────────────────────────
+// Completely separate render path for defensive plays.
+// Offense = grey squares (the enemy). Defenders = colored circles (YOUR team).
+
+const DEF_ROUTE_DURATION = 2.5; // seconds for offense routes to fully animate
+
+function getOffensePosition(pd, animTime) {
+  if (!pd.route || pd.route.length === 0 || animTime <= 0) return pd.pos;
+  const progress = Math.min(1, animTime / DEF_ROUTE_DURATION);
+  const fullPath = [pd.pos, ...pd.route];
+  let totalLen = 0;
+  const segLens = [];
+  for (let i = 1; i < fullPath.length; i++) {
+    const dx = fullPath[i][0] - fullPath[i-1][0];
+    const dy = fullPath[i][1] - fullPath[i-1][1];
+    segLens.push(Math.sqrt(dx*dx + dy*dy));
+    totalLen += segLens[segLens.length - 1];
+  }
+  if (totalLen === 0) return pd.pos;
+  const targetLen = totalLen * progress;
+  let acc = 0;
+  for (let i = 1; i < fullPath.length; i++) {
+    if (acc + segLens[i-1] >= targetLen) {
+      const frac = (targetLen - acc) / segLens[i-1];
+      return [
+        fullPath[i-1][0] + (fullPath[i][0] - fullPath[i-1][0]) * frac,
+        fullPath[i-1][1] + (fullPath[i][1] - fullPath[i-1][1]) * frac,
+      ];
+    }
+    acc += segLens[i-1];
+  }
+  return fullPath[fullPath.length - 1];
+}
+
+function getZoneDefenderPosition(dd, animTime) {
+  // Drop phase: 0 → 0.9s — move from pos to zone spot
+  const dropDuration = 0.9;
+  const t = Math.min(1, animTime / dropDuration);
+  const eased = t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // ease-in-out
+  const zx = dd.pos[0] + (dd.zone[0] - dd.pos[0]) * eased;
+  const zy = dd.pos[1] + (dd.zone[1] - dd.pos[1]) * eased;
+  return [zx, zy];
+}
+
+function getManDefenderPosition(dd, offenseKey, play, animTime) {
+  const offensePd = play.offense[offenseKey];
+  if (!offensePd) return dd.pos;
+  const DELAY = 0.35; // seconds behind the receiver
+  const trackedTime = Math.max(0, animTime - DELAY);
+  const receiverPos = getOffensePosition(offensePd, trackedTime);
+
+  // Defender starts at their pos, begins moving toward receiver at snap
+  if (animTime <= 0) return dd.pos;
+  const lerpT = Math.min(1, animTime * 1.2);
+  const startX = dd.pos[0] + (receiverPos[0] - dd.pos[0]) * lerpT;
+  const startY = dd.pos[1] + (receiverPos[1] - dd.pos[1]) * lerpT;
+
+  // After initial lock-on, track the receiver position directly
+  if (lerpT >= 1) return receiverPos;
+  return [startX, startY];
+}
+
+function drawDefenseFrame(play) {
+  const t = state.animTime;
+  drawField({ showNRZ: false });
+  drawDefConceptBadge(play);
+  drawDefOffenseRoutes(play, t);
+  drawDefOffensePlayers(play, t);
+  drawDefZoneBubbles(play, t);
+  drawDefenders(play, t);
+  drawDefCoachingPoints(play, t);
+}
+
+function drawDefConceptBadge(play) {
+  const cw = canvas.width / (window.devicePixelRatio || 1);
+  const isZone = play.concept === 'zone';
+  const color = isZone ? '#22c55e' : '#dc2626';
+  const label = isZone ? '🛡️ ZONE DEFENSE' : '🛡️ MAN DEFENSE';
+  const sub = isZone ? 'BASE — 80% of snaps' : 'CHANGEUP — use sparingly';
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  roundRect(ctx, cw - 170, fieldRect.y + 6, 162, 36, 8);
+  ctx.fill();
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+  roundRect(ctx, cw - 170, fieldRect.y + 6, 162, 36, 8);
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  ctx.font = 'bold 12px system-ui';
+  ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+  ctx.fillText(label, cw - 10, fieldRect.y + 11);
+  ctx.fillStyle = '#aaa';
+  ctx.font = '9px system-ui';
+  ctx.fillText(sub, cw - 10, fieldRect.y + 26);
+  ctx.restore();
+}
+
+function drawDefOffenseRoutes(play, t) {
+  for (const [key, pd] of Object.entries(play.offense)) {
+    if (!pd.route || pd.route.length === 0) continue;
+    const progress = Math.min(1, Math.max(0, t) / DEF_ROUTE_DURATION);
+    const fullPath = [pd.pos, ...pd.route];
+
+    let totalLen = 0;
+    const segLens = [];
+    for (let i = 1; i < fullPath.length; i++) {
+      const [x1, y1] = fieldToCanvas(fullPath[i-1][0], fullPath[i-1][1]);
+      const [x2, y2] = fieldToCanvas(fullPath[i][0], fullPath[i][1]);
+      const sl = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+      segLens.push(sl); totalLen += sl;
+    }
+    const drawLen = totalLen * progress;
+    if (drawLen <= 0) continue;
+
+    ctx.save();
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = '#aaaaaa';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([7, 5]);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+    let drawnSoFar = 0, endPoint = null, prevAngle = 0;
+    const [sx, sy] = fieldToCanvas(fullPath[0][0], fullPath[0][1]);
+    ctx.beginPath(); ctx.moveTo(sx, sy);
+    for (let i = 1; i < fullPath.length; i++) {
+      const [x1, y1] = fieldToCanvas(fullPath[i-1][0], fullPath[i-1][1]);
+      const [x2, y2] = fieldToCanvas(fullPath[i][0], fullPath[i][1]);
+      const sl = segLens[i-1];
+      if (drawnSoFar + sl <= drawLen) {
+        ctx.lineTo(x2, y2); endPoint = [x2, y2]; prevAngle = Math.atan2(y2-y1, x2-x1); drawnSoFar += sl;
+      } else {
+        const remain = drawLen - drawnSoFar, frac = remain / sl;
+        const ix = x1+(x2-x1)*frac, iy = y1+(y2-y1)*frac;
+        ctx.lineTo(ix, iy); endPoint = [ix, iy]; prevAngle = Math.atan2(iy-y1, ix-x1); break;
+      }
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Arrowhead on grey dashed route
+    if (endPoint && progress > 0.05) {
+      ctx.globalAlpha = 0.7;
+      drawArrowhead(endPoint[0], endPoint[1], prevAngle, '#aaaaaa', 9);
+    }
+
+    // Route label at end
+    if (progress >= 1 && pd.label) {
+      const last = pd.route[pd.route.length - 1];
+      const [lx, ly] = fieldToCanvas(last[0], last[1]);
+      ctx.globalAlpha = 0.75;
+      drawLabel(lx + 6, ly - 8, pd.label, '#888888', 0.75);
+    }
+    ctx.restore();
+  }
+}
+
+function drawDefOffensePlayers(play, t) {
+  for (const [key, pd] of Object.entries(play.offense)) {
+    const pos = getOffensePosition(pd, t);
+    const [cx, cy] = fieldToCanvas(pos[0], pos[1]);
+    const sz = state.sunlightMode ? 14 : 11;
+
+    ctx.save();
+    ctx.globalAlpha = 0.75;
+    // Grey square = offense (enemy)
+    ctx.fillStyle = '#555555';
+    ctx.fillRect(cx - sz, cy - sz, sz * 2, sz * 2);
+    ctx.strokeStyle = '#888888'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(cx - sz, cy - sz, sz * 2, sz * 2);
+    ctx.fillStyle = '#cccccc';
+    ctx.font = `bold ${state.sunlightMode ? 9 : 8}px system-ui`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(pd.label || key, cx, cy);
+    ctx.restore();
+  }
+}
+
+function drawDefZoneBubbles(play, t) {
+  if (play.concept !== 'zone') return;
+  const dropT = Math.min(1, Math.max(0, t) / 0.9);
+  if (dropT < 0.3) return; // don't show until defenders start dropping
+
+  ctx.save();
+  for (const [key, dd] of Object.entries(play.defenders)) {
+    if (!dd.zone) continue;
+    const [zx, zy] = fieldToCanvas(dd.zone[0], dd.zone[1]);
+    const r = scaleLen(4.5); // ~4.5 yard radius zone bubble
+
+    // Bubble grows in as defender drops to zone
+    const bubbleAlpha = Math.min(0.18, 0.18 * dropT);
+    ctx.beginPath(); ctx.arc(zx, zy, r, 0, Math.PI * 2);
+    ctx.fillStyle = dd.color;
+    ctx.globalAlpha = bubbleAlpha;
+    ctx.fill();
+
+    // Ring outline
+    ctx.globalAlpha = Math.min(0.35, 0.35 * dropT);
+    ctx.strokeStyle = dd.color; ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.restore();
+}
+
+function drawDefenders(play, t) {
+  for (const [key, dd] of Object.entries(play.defenders)) {
+    let pos;
+    if (play.concept === 'man' && dd.assignment) {
+      pos = getManDefenderPosition(dd, dd.assignment, play, t);
+    } else if (dd.zone) {
+      pos = getZoneDefenderPosition(dd, t);
+    } else {
+      pos = dd.pos;
+    }
+
+    const [cx, cy] = fieldToCanvas(pos[0], pos[1]);
+    const r = state.sunlightMode ? 18 : 14;
+
+    ctx.save();
+    // Colored circle = YOUR defender
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = dd.color; ctx.fill();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = state.sunlightMode ? 3 : 2;
+    ctx.stroke();
+
+    // Text contrast
+    const lightColors = ['#22c55e', '#f59e0b', '#2dd4bf'];
+    const tc = lightColors.includes(dd.color) ? '#000' : '#fff';
+    ctx.fillStyle = tc;
+    ctx.font = `bold ${state.sunlightMode ? 10 : 8}px system-ui`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(key, cx, cy);
+
+    // "INTERCEPTOR!" pulse when ball is thrown in zone coverage
+    if (play.concept === 'zone' && play.qbThrowTime && t >= play.qbThrowTime) {
+      const pulseDt = t - play.qbThrowTime;
+      if (pulseDt < 1.2) {
+        const pulse = 0.5 + 0.5 * Math.sin(pulseDt * 10);
+        ctx.beginPath(); ctx.arc(cx, cy, r + 4 + pulse * 6, 0, Math.PI * 2);
+        ctx.strokeStyle = dd.color; ctx.lineWidth = 2.5;
+        ctx.globalAlpha = 0.6 - pulseDt * 0.4;
+        ctx.stroke();
+      }
+    }
+
+    // Zone label on zone spot (not on moving defender dot)
+    if (dd.zone && t > 0.4 && dd.label) {
+      const zonePos = getZoneDefenderPosition(dd, t);
+      // Only show once defender is near their zone
+      const dx = zonePos[0] - dd.zone[0], dy = zonePos[1] - dd.zone[1];
+      const distToZone = Math.sqrt(dx*dx + dy*dy);
+      if (distToZone < 2.0) {
+        const [lx, ly] = fieldToCanvas(dd.zone[0], dd.zone[1]);
+        ctx.globalAlpha = 0.9;
+        drawLabel(lx + r + 4, ly - 10, dd.label, dd.color, 0.9);
+      }
+    }
+
+    // Man label — show assignment
+    if (play.concept === 'man' && dd.label && t > 0.2) {
+      ctx.globalAlpha = 0.9;
+      drawLabel(cx + r + 4, cy - 10, dd.label, dd.color, 0.9);
+    }
+
+    ctx.restore();
+  }
+}
+
+function drawDefCoachingPoints(play, t) {
+  if (!play.coachingPoints) return;
+  for (const cp of play.coachingPoints) {
+    if (t < (cp.showAfter || 0)) continue;
+    const fadeIn = Math.min(1, (t - (cp.showAfter || 0)) / 0.4);
+    const [cx, cy] = fieldToCanvas(cp.x, cp.y);
+    ctx.globalAlpha = fadeIn;
+    drawLabel(cx, cy, cp.text, cp.color, fadeIn);
+    ctx.globalAlpha = 1;
+  }
 }

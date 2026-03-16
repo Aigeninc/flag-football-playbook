@@ -18,6 +18,8 @@ import {
 import {
   buildPlaySelector, buildPlayerFilter, buildControls, updateInfoPanel,
   setSelectPlayFn as uiSetSelectPlay,
+  setSelectDefPlayFn as uiSetSelectDefPlay,
+  setupDefenseToggle, updateDefenseToggleBtn,
 } from './modules/ui.js';
 
 import {
@@ -34,6 +36,7 @@ import {
 import {
   setupTouch, setupKeyboard,
   setSelectPlayFn as touchSetSelectPlay,
+  setSelectDefPlayFn as touchSetSelectDefPlay,
 } from './modules/touch.js';
 
 import {
@@ -70,6 +73,58 @@ function selectPlay(idx) {
 
   const btns = document.querySelectorAll('.play-btn');
   if (btns[idx]) btns[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+}
+
+// ── selectDefPlay — defense play navigation ───────────────────
+
+function selectDefPlay(idx) {
+  state.currentDefPlayIdx = idx;
+  state.animTime = 0;
+  state.playing = false;
+  state.lastFrameTs = null;
+
+  const btn = document.getElementById('btn-play');
+  if (btn) btn.textContent = '▶';
+
+  buildPlaySelector();
+  updateInfoPanel();
+  drawFrame();
+  updateTimer();
+
+  // Scroll the selected defense button into view
+  const btns = document.querySelectorAll('.def-play-btn');
+  if (btns[idx]) btns[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+}
+
+// ── toggleDefenseView ─────────────────────────────────────────
+
+function toggleDefenseView() {
+  state.defenseViewActive = !state.defenseViewActive;
+
+  // Reset animation
+  state.animTime = 0;
+  state.playing = false;
+  state.highlightPlayer = null;
+  state.lastFrameTs = null;
+
+  const btn = document.getElementById('btn-play');
+  if (btn) btn.textContent = '▶';
+
+  updateDefenseToggleBtn();
+  buildPlaySelector();
+
+  if (state.defenseViewActive) {
+    // Hide player filter in defense mode (defenders aren't named roster players)
+    document.getElementById('player-filter').style.display = 'none';
+  } else {
+    document.getElementById('player-filter').style.display = '';
+    buildPlayerFilter();
+  }
+
+  updateInfoPanel();
+  drawFrame();
+  updateTimer();
+  setTimeout(() => startAnimation(), 400);
 }
 
 // ── Coach & Queue panel accordion (mutually exclusive) ────────
@@ -155,12 +210,17 @@ function init() {
 
   // Wire up selectPlay callbacks in each module
   uiSetSelectPlay(selectPlay);
+  uiSetSelectDefPlay(selectDefPlay);
   coachSetSelectPlay(selectPlay);
   queueSetSelectPlay(selectPlay);
   touchSetSelectPlay(selectPlay);
+  touchSetSelectDefPlay(selectDefPlay);
   rosterSetSelectPlay(selectPlay);
   gamedaySetSelectPlay(selectPlay);
   setBuildPlaySelectorFn(buildPlaySelector);
+
+  // Wire up defense toggle
+  setupDefenseToggle(toggleDefenseView);
 
   // Pass updateTimer to animation loop
   setUpdateTimerFn(updateTimer);
