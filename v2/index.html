@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Playbook">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="description" content="Flag football play animator and playbook builder">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>Playbook</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <nav id="app-nav"></nav>
+  <main id="app-root"></main>
+  <script type="module" src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          // Check for updates
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing
+            if (!newWorker) return
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New version available — show toast
+                showUpdateToast(reg)
+              }
+            })
+          })
+        }).catch(err => console.error('SW registration failed:', err))
+      })
+    }
+
+    function showUpdateToast(reg) {
+      const toast = document.createElement('div')
+      toast.className = 'update-toast'
+      toast.innerHTML = '🔄 Update available <button onclick="applyUpdate()">Refresh</button>'
+      document.body.appendChild(toast)
+      window._pendingReg = reg
+    }
+
+    function applyUpdate() {
+      const reg = window._pendingReg
+      if (reg && reg.waiting) {
+        reg.waiting.postMessage('skipWaiting')
+      }
+      // Reload once the new SW takes over
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload()
+      })
+    }
+  </script>
+</body>
+</html>
