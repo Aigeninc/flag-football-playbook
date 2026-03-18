@@ -14,6 +14,7 @@ export function el(tag, attrs = {}, children = []) {
     else if (key === 'dataset') Object.assign(element.dataset, val)
     else if (key === 'style' && typeof val === 'object') Object.assign(element.style, val)
     else if (key.startsWith('on')) element.addEventListener(key.slice(2).toLowerCase(), val)
+    else if (typeof val === 'boolean') { if (val) element.setAttribute(key, ''); else element.removeAttribute(key) }
     else element.setAttribute(key, val)
   }
   for (const child of children) {
