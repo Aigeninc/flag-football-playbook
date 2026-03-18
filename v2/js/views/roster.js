@@ -1,4 +1,5 @@
 import { el, clear, showToast } from '../utils/dom.js'
+import { PLAY_LIBRARY } from '../play-library.js'
 
 const FIELD_POSITIONS = ['QB', 'C', 'WR1', 'WR2', 'RB']
 const ALL_POSITIONS = [...FIELD_POSITIONS, 'BENCH']
@@ -17,8 +18,21 @@ export function rosterView(params, outlet) {
   let showAddForm = false
   let selectedForSwap = null
 
+  // Playbook editor state
+  let editingPlaybookFor = null  // player name currently being edited, or null
+  let editorState = {}           // { playId: { checked, position } } — local edit state
+  let editorInitKey = null       // tracks which player's state is currently loaded
+
+  // ─── Master render ─────────────────────────────────────────────────────────
   function render() {
     clear(outlet)
+
+    // If in playbook editor mode, show editor instead of roster
+    if (editingPlaybookFor !== null) {
+      outlet.appendChild(buildPlaybookEditor(editingPlaybookFor))
+      return
+    }
+
     const roster = store.get().roster
     const container = el('div', { className: 'card roster-card' })
 
@@ -33,19 +47,6 @@ export function rosterView(params, outlet) {
     ]))
 
     if (showAddForm) container.appendChild(buildAddForm())
-
-    // Global swap hint bar — visible whenever a player is selected
-    if (selectedForSwap) {
-      const selectedPlayer = roster.find(p => p.id === selectedForSwap)
-      container.appendChild(el('div', { className: 'roster-swap-active-hint' }, [
-        el('span', { textContent: `📍 ${selectedPlayer ? selectedPlayer.name : '?'} selected — tap another player to swap` }),
-        el('button', {
-          className: 'btn btn-ghost btn-sm',
-          textContent: '✕ Cancel',
-          onclick: (e) => { e.stopPropagation(); clearSwapSelection() },
-        }),
-      ]))
-    }
 
     if (roster.length === 0 && !showAddForm) {
       container.appendChild(el('div', { className: 'roster-empty' }, [
@@ -76,12 +77,10 @@ export function rosterView(params, outlet) {
         className: 'roster-section-label roster-bench-label',
         textContent: `BENCH (${bench.length})`,
       }))
-      if (!selectedForSwap) {
-        container.appendChild(el('div', {
-          className: 'roster-swap-hint',
-          textContent: 'Tap any player to select, then tap another to swap positions',
-        }))
-      }
+      container.appendChild(el('div', {
+        className: 'roster-swap-hint',
+        textContent: 'Tap a bench player, then tap a starter to swap them in',
+      }))
       const benchList = el('div', { className: 'roster-list roster-bench' })
       for (const player of bench) {
         benchList.appendChild(buildPlayerRow(player))
@@ -114,20 +113,19 @@ export function rosterView(params, outlet) {
 
   function clearSwapSelection() {
     selectedForSwap = null
-    render()
+    outlet.querySelectorAll('.roster-player-row').forEach(r => r.classList.remove('swap-selected'))
   }
 
   // ─── Player Row ───────────────────────────────────────────────────────────
   function buildPlayerRow(player) {
     const isBench = player.position === 'BENCH'
-    const isSelected = selectedForSwap === player.id
     const row = el('div', {
-      className: `roster-player-row ${isBench ? 'roster-bench-player' : 'roster-starter'}${isSelected ? ' swap-selected' : ''}`,
+      className: `roster-player-row ${isBench ? 'roster-bench-player' : 'roster-starter'}`,
       dataset: { playerId: player.id },
     })
 
     row.appendChild(el('span', {
-      className: `position-badge ${POS_CLASS[player.position] || 'pos-bench'}`,
+      className: `position-badge ${POS_CLASS[player.position] || ''}`,
       textContent: player.position,
     }))
     row.appendChild(el('span', { className: 'roster-player-name', textContent: player.name }))
@@ -135,12 +133,49 @@ export function rosterView(params, outlet) {
       className: 'roster-player-number',
       textContent: player.number != null ? `#${player.number}` : '',
     }))
+
+    // Check if player has a personal playbook
+    const state = store.get()
+    const hasPlaybook = !!(state.playerPlaybooks?.[player.name]?.length)
+
     row.appendChild(el('div', { className: 'roster-row-actions' }, [
+      // Playbook editor button
+      el('button', {
+        className: `btn btn-ghost btn-sm ${hasPlaybook ? 'ppb-has-playbook' : ''}`,
+        textContent: '📋',
+        title: hasPlaybook ? `Edit ${player.name}'s playbook` : `Create ${player.name}'s playbook`,
+        onclick: (e) => {
+          e.stopPropagation()
+          clearSwapSelection()
+          editingPlaybookFor = player.name
+          editorInitKey = null  // force fresh initialization
+          render()
+        },
+      }),
+      // Share link button
+      el('button', {
+        className: 'btn btn-ghost btn-sm',
+        textContent: '📤',
+        title: `Copy ${player.name}'s share link`,
+        onclick: (e) => {
+          e.stopPropagation()
+          clearSwapSelection()
+          const url = `${window.location.origin}${window.location.pathname}#/share?player=${encodeURIComponent(player.name)}`
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(() => showToast(`📋 Copied ${player.name}'s link!`))
+              .catch(() => fallbackCopy(url, player.name))
+          } else {
+            fallbackCopy(url, player.name)
+          }
+        },
+      }),
+      // Edit button
       el('button', {
         className: 'btn btn-ghost btn-sm',
         textContent: '✏️',
         onclick: (e) => { e.stopPropagation(); clearSwapSelection(); showEditModal(player) },
       }),
+      // Delete button
       el('button', {
         className: 'btn btn-danger btn-sm',
         textContent: '✕',
@@ -161,7 +196,7 @@ export function rosterView(params, outlet) {
 
       if (selectedForSwap === null) {
         selectedForSwap = player.id
-        render()  // re-render so the global swap hint bar appears immediately
+        row.classList.add('swap-selected')
       } else if (selectedForSwap === player.id) {
         clearSwapSelection()
       } else {
@@ -171,12 +206,12 @@ export function rosterView(params, outlet) {
         const b = roster.find(p => p.id === player.id)
         if (a && b) {
           const tmpPos = a.position
-          a.position = b.position  // a's new position = b's old position
-          b.position = tmpPos      // b's new position = a's old position
+          a.position = b.position
+          b.position = tmpPos
           selectedForSwap = null
           store.set({ roster })
-          // a.position and b.position now hold their NEW positions after the swap
-          showToast(`${a.name} → ${a.position}, ${b.name} → ${b.position}`)
+          showToast(`${a.name} → ${b.position}, ${b.name} → ${a.position}`)
+          render()
         } else {
           clearSwapSelection()
         }
@@ -184,6 +219,150 @@ export function rosterView(params, outlet) {
     })
 
     return row
+  }
+
+  function fallbackCopy(url, playerName) {
+    const inp = document.createElement('input')
+    inp.value = url
+    inp.style.position = 'fixed'
+    inp.style.opacity = '0'
+    document.body.appendChild(inp)
+    inp.select()
+    try { document.execCommand('copy') } catch (_) {}
+    document.body.removeChild(inp)
+    showToast(`📋 Copied ${playerName}'s link!`)
+  }
+
+  // ─── Playbook Editor ──────────────────────────────────────────────────────
+  function initEditorState(playerName) {
+    if (editorInitKey === playerName) return  // already initialized for this player
+
+    editorInitKey = playerName
+
+    const state = store.get()
+    const player = state.roster.find(p => p.name === playerName)
+    const rosterPos = player?.position
+    const isStarter = rosterPos && rosterPos !== 'BENCH'
+    const existing = (state.playerPlaybooks || {})[playerName] || []
+
+    editorState = {}
+    for (const play of PLAY_LIBRARY) {
+      const entry = existing.find(e => e.playId === play.id)
+      if (entry) {
+        editorState[play.id] = { checked: true, position: entry.position }
+      } else {
+        editorState[play.id] = {
+          checked: isStarter,              // pre-check all plays for starters
+          position: isStarter ? rosterPos : 'WR1',  // default to their position
+        }
+      }
+    }
+  }
+
+  function buildPlaybookEditor(playerName) {
+    initEditorState(playerName)
+
+    const container = el('div', { className: 'card ppb-editor' })
+
+    // Header
+    const header = el('div', { className: 'ppb-editor-header' }, [
+      el('button', {
+        className: 'btn btn-ghost btn-sm',
+        textContent: '← Back',
+        onclick: () => { editingPlaybookFor = null; editorInitKey = null; render() },
+      }),
+      el('h2', { className: 'ppb-editor-title', textContent: `📋 ${playerName}'s Playbook` }),
+    ])
+    container.appendChild(header)
+
+    // Play count hint
+    const checkedCount = Object.values(editorState).filter(e => e.checked).length
+    const hint = el('p', {
+      className: 'ppb-editor-hint',
+      textContent: `${checkedCount} of ${PLAY_LIBRARY.length} plays selected. Check each play and assign this player's position.`,
+    })
+    container.appendChild(hint)
+
+    // Play list
+    const playList = el('div', { className: 'ppb-play-list' })
+
+    for (const play of PLAY_LIBRARY) {
+      const editEntry = editorState[play.id]
+      const row = el('div', { className: `ppb-play-row ${editEntry.checked ? 'ppb-play-row-active' : ''}` })
+
+      const cbId = `ppb-cb-${play.id}`
+      const checkbox = document.createElement('input')
+      checkbox.type = 'checkbox'
+      checkbox.className = 'ppb-checkbox'
+      checkbox.id = cbId
+      checkbox.checked = editEntry.checked
+
+      const nameLabel = document.createElement('label')
+      nameLabel.htmlFor = cbId
+      nameLabel.className = 'ppb-play-name'
+      nameLabel.textContent = play.name
+
+      const posSelect = el('select', { className: 'input ppb-position-select' },
+        FIELD_POSITIONS.map(p => el('option', { value: p, textContent: p }))
+      )
+      posSelect.value = editEntry.position
+      posSelect.disabled = !editEntry.checked
+
+      // Wire up events
+      checkbox.addEventListener('change', () => {
+        editorState[play.id].checked = checkbox.checked
+        posSelect.disabled = !checkbox.checked
+        row.classList.toggle('ppb-play-row-active', checkbox.checked)
+        // Update hint counter
+        const newCount = Object.values(editorState).filter(e => e.checked).length
+        hint.textContent = `${newCount} of ${PLAY_LIBRARY.length} plays selected. Check each play and assign this player's position.`
+      })
+
+      posSelect.addEventListener('change', () => {
+        editorState[play.id].position = posSelect.value
+      })
+
+      row.appendChild(checkbox)
+      row.appendChild(nameLabel)
+      row.appendChild(posSelect)
+      playList.appendChild(row)
+    }
+
+    container.appendChild(playList)
+
+    // Actions
+    container.appendChild(el('div', { className: 'ppb-editor-actions' }, [
+      el('button', {
+        className: 'btn btn-primary',
+        textContent: '💾 Save Playbook',
+        onclick: () => {
+          const rosterMap = store.getRosterMap()
+          const entries = PLAY_LIBRARY
+            .filter(play => editorState[play.id]?.checked)
+            .map(play => ({
+              playId: play.id,
+              position: editorState[play.id].position,
+              replacesPlayer: rosterMap[editorState[play.id].position] || editorState[play.id].position,
+            }))
+
+          const playerPlaybooks = { ...(store.get().playerPlaybooks || {}) }
+          playerPlaybooks[playerName] = entries
+          store.set({ playerPlaybooks })
+
+          showToast(`✅ ${playerName}'s playbook saved (${entries.length} plays)`)
+          editingPlaybookFor = null
+          editorInitKey = null
+          render()
+        },
+      }),
+      el('button', {
+        className: 'btn btn-ghost',
+        textContent: 'Cancel',
+        onclick: () => { editingPlaybookFor = null; editorInitKey = null; render() },
+      }),
+    ]))
+
+    return container
   }
 
   // ─── Edit modal ───────────────────────────────────────────────────────────

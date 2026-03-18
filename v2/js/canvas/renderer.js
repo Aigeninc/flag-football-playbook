@@ -340,6 +340,28 @@ export function renderPlay(canvas, play, options = {}) {
     const { x, y } = fieldToCanvas(data.pos[0], data.pos[1], w, h)
     const label = rosterMap[pos] || pos
 
+    // Glow ring for highlighted position
+    const isHighlighted = !mini && highlightPosition && pos === highlightPosition
+    if (isHighlighted) {
+      ctx.save()
+      const glowRadius = 22
+      const gradient = ctx.createRadialGradient(x, y, 10, x, y, glowRadius)
+      gradient.addColorStop(0, color + '50')
+      gradient.addColorStop(1, color + '00')
+      ctx.beginPath()
+      ctx.arc(x, y, glowRadius, 0, Math.PI * 2)
+      ctx.fillStyle = gradient
+      ctx.fill()
+      // Pulsing outer ring
+      ctx.beginPath()
+      ctx.arc(x, y, 17, 0, Math.PI * 2)
+      ctx.strokeStyle = color
+      ctx.lineWidth = 2
+      ctx.globalAlpha = 0.65
+      ctx.stroke()
+      ctx.restore()
+    }
+
     ctx.globalAlpha = opacity
     drawPlayer(ctx, x, y, label, color, { mini })
     ctx.globalAlpha = 1

@@ -618,6 +618,27 @@ export class PlayAnimator {
         }
       }
 
+      // Glow ring for highlighted position
+      if (opts.highlightPosition && pos === opts.highlightPosition) {
+        ctx.save()
+        const glowRadius = 22 * scale
+        const gradient = ctx.createRadialGradient(x, y, 10 * scale, x, y, glowRadius)
+        gradient.addColorStop(0, color + '50')
+        gradient.addColorStop(1, color + '00')
+        ctx.beginPath()
+        ctx.arc(x, y, glowRadius, 0, Math.PI * 2)
+        ctx.fillStyle = gradient
+        ctx.globalAlpha = alpha * 0.9
+        ctx.fill()
+        ctx.beginPath()
+        ctx.arc(x, y, 17 * scale, 0, Math.PI * 2)
+        ctx.strokeStyle = color
+        ctx.lineWidth = 2
+        ctx.globalAlpha = alpha * 0.65
+        ctx.stroke()
+        ctx.restore()
+      }
+
       drawAnimPlayer(ctx, x, y, label, color, { scale, alpha })
 
       // Read badges
