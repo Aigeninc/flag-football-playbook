@@ -1058,6 +1058,7 @@ export function practiceView(params, outlet) {
     const tmp = blocks[idx]
     blocks[idx] = blocks[newIdx]
     blocks[newIdx] = tmp
+    savePlan()
   }
 
   function savePlan() {
