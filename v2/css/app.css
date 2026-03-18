@@ -638,6 +638,24 @@ select.input {
 .player-nav-btn:hover { background: #1a4a8a; }
 .player-nav-btn:disabled { opacity: 0.3; pointer-events: none; }
 
+.player-restart-btn {
+  min-width: 40px;
+  min-height: 40px;
+  font-size: 20px;
+  padding: 6px;
+  border-radius: 50%;
+  border: 1.5px solid #555;
+  color: #aaa;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.player-restart-btn:active {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
 .player-play-btn {
   min-width: 100px;
   min-height: 48px;

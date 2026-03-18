@@ -196,6 +196,7 @@ function renderPersonalPlaybookView(playerName, ppbEntries, outlet, store) {
   const playInfo = el('div', { className: 'player-view-play-info' }, [codenameEl, realnameEl])
 
   const prevBtn = el('button', { className: 'btn player-nav-btn', textContent: '◀ Prev' })
+  const restartBtn = el('button', { className: 'btn player-restart-btn', textContent: '↺', title: 'Restart', onClick: () => { if (animator) { animator.reset(); animator.play() } } })
   const playBtn = el('button', { className: 'btn btn-primary player-play-btn', textContent: '▶ Play' })
   const nextBtn = el('button', { className: 'btn player-nav-btn', textContent: 'Next ▶' })
 
@@ -218,7 +219,7 @@ function renderPersonalPlaybookView(playerName, ppbEntries, outlet, store) {
   }))
   const speedControls = el('div', { className: 'player-view-speed-controls' }, speedBtns)
 
-  const controls = el('div', { className: 'player-view-controls' }, [prevBtn, playBtn, nextBtn])
+  const controls = el('div', { className: 'player-view-controls' }, [prevBtn, restartBtn, playBtn, nextBtn])
   const extraControls = el('div', { className: 'player-view-extra-controls' }, [highlightBtn, speedControls])
 
   const view = el('div', { className: 'player-view' }, [
@@ -445,6 +446,7 @@ function renderPlayerView(playbookId, playerName, outlet, store) {
   const playInfo = el('div', { className: 'player-view-play-info' }, [codenameEl, realnameEl])
 
   const prevBtn = el('button', { className: 'btn player-nav-btn', textContent: '◀ Prev' })
+  const restartBtn = el('button', { className: 'btn player-restart-btn', textContent: '↺', title: 'Restart', onClick: () => { if (animator) { animator.reset(); animator.play() } } })
   const playBtn = el('button', { className: 'btn btn-primary player-play-btn', textContent: '▶ Play' })
   const nextBtn = el('button', { className: 'btn player-nav-btn', textContent: 'Next ▶' })
 
@@ -467,7 +469,7 @@ function renderPlayerView(playbookId, playerName, outlet, store) {
   }))
   const speedControls = el('div', { className: 'player-view-speed-controls' }, speedBtns)
 
-  const controls = el('div', { className: 'player-view-controls' }, [prevBtn, playBtn, nextBtn])
+  const controls = el('div', { className: 'player-view-controls' }, [prevBtn, restartBtn, playBtn, nextBtn])
   const extraControls = el('div', { className: 'player-view-extra-controls' }, [highlightBtn, speedControls])
 
   const view = el('div', { className: 'player-view' }, [
