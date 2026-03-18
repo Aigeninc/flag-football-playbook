@@ -187,7 +187,7 @@ function renderPersonalPlaybookView(playerName, ppbEntries, outlet, store) {
 
   const counterEl = el('div', { className: 'player-view-counter', textContent: `1 / ${plays.length}` })
 
-  const canvas = el('canvas', { style: { width: '100%', display: 'block' } })
+  const canvas = el('canvas', { className: 'player-view-canvas', style: { width: '100%', display: 'block' } })
   const canvasWrap = el('div', { className: 'player-view-canvas-wrap' }, [canvas])
 
   const codenameEl = el('h2', { className: 'player-view-codename' })
@@ -272,13 +272,20 @@ function renderPersonalPlaybookView(playerName, ppbEntries, outlet, store) {
     // Destroy previous animator
     if (animator) { animator.destroy(); animator = null }
 
-    // Size canvas — use 1.4 ratio for a taller field view
+    // Size canvas — render tall, CSS clips to center on formation
     const dpr = window.devicePixelRatio || 1
     const cssW = canvasWrap.offsetWidth || 360
-    const cssH = Math.round(cssW * 1.4)
+    const renderH = Math.round(cssW * 2.0) // full tall render
+    const visibleH = Math.round(cssW * 1.3) // visible viewport
     canvas.width = Math.round(cssW * dpr)
-    canvas.height = Math.round(cssH * dpr)
-    canvas.style.height = cssH + 'px'
+    canvas.height = Math.round(renderH * dpr)
+    canvas.style.height = renderH + 'px'
+    // Shift canvas up so LOS area (65% of renderH) centers in viewport
+    const losPixel = renderH * 0.65
+    const shiftUp = losPixel - visibleH * 0.45 // put LOS at 45% of visible area
+    canvas.style.marginTop = -Math.round(shiftUp) + 'px'
+    canvasWrap.style.height = visibleH + 'px'
+    canvasWrap.style.overflow = 'hidden'
     const ctx = canvas.getContext('2d')
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
@@ -430,7 +437,7 @@ function renderPlayerView(playbookId, playerName, outlet, store) {
 
   const counterEl = el('div', { className: 'player-view-counter', textContent: `1 / ${plays.length}` })
 
-  const canvas = el('canvas', { style: { width: '100%', display: 'block' } })
+  const canvas = el('canvas', { className: 'player-view-canvas', style: { width: '100%', display: 'block' } })
   const canvasWrap = el('div', { className: 'player-view-canvas-wrap' }, [canvas])
 
   const codenameEl = el('h2', { className: 'player-view-codename' })
@@ -504,13 +511,19 @@ function renderPlayerView(playbookId, playerName, outlet, store) {
     // Destroy previous animator
     if (animator) { animator.destroy(); animator = null }
 
-    // Size canvas — use 1.4 ratio for a taller field view
+    // Size canvas — render tall, CSS clips to center on formation
     const dpr = window.devicePixelRatio || 1
     const cssW = canvasWrap.offsetWidth || 360
-    const cssH = Math.round(cssW * 1.4)
+    const renderH = Math.round(cssW * 2.0)
+    const visibleH = Math.round(cssW * 1.3)
     canvas.width = Math.round(cssW * dpr)
-    canvas.height = Math.round(cssH * dpr)
-    canvas.style.height = cssH + 'px'
+    canvas.height = Math.round(renderH * dpr)
+    canvas.style.height = renderH + 'px'
+    const losPixel = renderH * 0.65
+    const shiftUp = losPixel - visibleH * 0.45
+    canvas.style.marginTop = -Math.round(shiftUp) + 'px'
+    canvasWrap.style.height = visibleH + 'px'
+    canvasWrap.style.overflow = 'hidden'
     const ctx = canvas.getContext('2d')
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
