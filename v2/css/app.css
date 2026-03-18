@@ -1869,7 +1869,32 @@ select.input {
 .player-view-extra-controls {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 12px;
   padding: 4px 0 8px;
+  flex-wrap: wrap;
+}
+
+.player-view-speed-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.player-speed-btn {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 16px;
+  border: 1.5px solid #555;
+  color: #888;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.player-speed-btn.active {
+  border-color: #4ecdc4;
+  color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.12);
 }
 
 /* Highlight toggle button */

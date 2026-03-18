@@ -1,6 +1,12 @@
 import { el, clear, showToast } from '../utils/dom.js'
 import { getPlay } from '../play-library.js'
-import { PlayAnimator } from '../canvas/animator.js'
+import { PlayAnimator, SPEEDS } from '../canvas/animator.js'
+
+const SPEED_LABELS = [
+  { key: 'teaching', label: '🐢 Teach' },
+  { key: 'walkthrough', label: '🚶 Walk' },
+  { key: 'full', label: '🏃 Full' },
+]
 
 export function playerShareView(params, outlet) {
   const store = window.__store
@@ -175,12 +181,13 @@ function renderPersonalPlaybookView(playerName, ppbEntries, outlet, store) {
 
   // Highlight toggle state (persisted to localStorage)
   let highlightOn = localStorage.getItem('pb_player_highlight_on') !== 'false'
+  let currentSpeed = localStorage.getItem('pb_player_speed') || 'teaching'
 
   // ── Build DOM ────────────────────────────────────────────────────────────
 
   const counterEl = el('div', { className: 'player-view-counter', textContent: `1 / ${plays.length}` })
 
-  const canvas = el('canvas', { style: { width: '100%', height: '100%', display: 'block' } })
+  const canvas = el('canvas', { style: { width: '100%', display: 'block' } })
   const canvasWrap = el('div', { className: 'player-view-canvas-wrap' }, [canvas])
 
   const codenameEl = el('h2', { className: 'player-view-codename' })
@@ -198,8 +205,21 @@ function renderPersonalPlaybookView(playerName, ppbEntries, outlet, store) {
     title: 'Toggle route highlight for your position',
   })
 
+  // Speed toggle buttons
+  const speedBtns = SPEED_LABELS.map(s => el('button', {
+    className: `btn btn-sm player-speed-btn ${s.key === currentSpeed ? 'active' : ''}`,
+    textContent: s.label,
+    onClick: () => {
+      currentSpeed = s.key
+      localStorage.setItem('pb_player_speed', currentSpeed)
+      speedBtns.forEach((b, i) => b.classList.toggle('active', SPEED_LABELS[i].key === currentSpeed))
+      if (animator) animator.setSpeed(currentSpeed)
+    },
+  }))
+  const speedControls = el('div', { className: 'player-view-speed-controls' }, speedBtns)
+
   const controls = el('div', { className: 'player-view-controls' }, [prevBtn, playBtn, nextBtn])
-  const extraControls = el('div', { className: 'player-view-extra-controls' }, [highlightBtn])
+  const extraControls = el('div', { className: 'player-view-extra-controls' }, [highlightBtn, speedControls])
 
   const view = el('div', { className: 'player-view' }, [
     el('div', { className: 'player-view-header' }, [
@@ -252,12 +272,13 @@ function renderPersonalPlaybookView(playerName, ppbEntries, outlet, store) {
     // Destroy previous animator
     if (animator) { animator.destroy(); animator = null }
 
-    // Size canvas
+    // Size canvas — use 1.4 ratio for a taller field view
     const dpr = window.devicePixelRatio || 1
     const cssW = canvasWrap.offsetWidth || 360
-    const cssH = Math.round(cssW * 1.2)
+    const cssH = Math.round(cssW * 1.4)
     canvas.width = Math.round(cssW * dpr)
     canvas.height = Math.round(cssH * dpr)
+    canvas.style.height = cssH + 'px'
     const ctx = canvas.getContext('2d')
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
@@ -272,7 +293,7 @@ function renderPersonalPlaybookView(playerName, ppbEntries, outlet, store) {
       showReadNumbers: false,
       showAllRoutes: true,
       highlightPosition: highlightOn ? position : null,
-      speed: 'full',
+      speed: currentSpeed,
     })
 
     animator.onStateChange(state => {
@@ -403,12 +424,13 @@ function renderPlayerView(playbookId, playerName, outlet, store) {
 
   // Highlight toggle state (persisted to localStorage)
   let highlightOn = localStorage.getItem('pb_player_highlight_on') !== 'false'
+  let currentSpeed = localStorage.getItem('pb_player_speed') || 'teaching'
 
   // ── Build DOM ────────────────────────────────────────────────────────────
 
   const counterEl = el('div', { className: 'player-view-counter', textContent: `1 / ${plays.length}` })
 
-  const canvas = el('canvas', { style: { width: '100%', height: '100%', display: 'block' } })
+  const canvas = el('canvas', { style: { width: '100%', display: 'block' } })
   const canvasWrap = el('div', { className: 'player-view-canvas-wrap' }, [canvas])
 
   const codenameEl = el('h2', { className: 'player-view-codename' })
@@ -425,8 +447,21 @@ function renderPlayerView(playbookId, playerName, outlet, store) {
     title: 'Toggle route highlight for your position',
   })
 
+  // Speed toggle buttons
+  const speedBtns = SPEED_LABELS.map(s => el('button', {
+    className: `btn btn-sm player-speed-btn ${s.key === currentSpeed ? 'active' : ''}`,
+    textContent: s.label,
+    onClick: () => {
+      currentSpeed = s.key
+      localStorage.setItem('pb_player_speed', currentSpeed)
+      speedBtns.forEach((b, i) => b.classList.toggle('active', SPEED_LABELS[i].key === currentSpeed))
+      if (animator) animator.setSpeed(currentSpeed)
+    },
+  }))
+  const speedControls = el('div', { className: 'player-view-speed-controls' }, speedBtns)
+
   const controls = el('div', { className: 'player-view-controls' }, [prevBtn, playBtn, nextBtn])
-  const extraControls = el('div', { className: 'player-view-extra-controls' }, [highlightBtn])
+  const extraControls = el('div', { className: 'player-view-extra-controls' }, [highlightBtn, speedControls])
 
   const view = el('div', { className: 'player-view' }, [
     el('div', { className: 'player-view-header' }, [
@@ -469,12 +504,13 @@ function renderPlayerView(playbookId, playerName, outlet, store) {
     // Destroy previous animator
     if (animator) { animator.destroy(); animator = null }
 
-    // Size canvas
+    // Size canvas — use 1.4 ratio for a taller field view
     const dpr = window.devicePixelRatio || 1
     const cssW = canvasWrap.offsetWidth || 360
-    const cssH = Math.round(cssW * 1.2)
+    const cssH = Math.round(cssW * 1.4)
     canvas.width = Math.round(cssW * dpr)
     canvas.height = Math.round(cssH * dpr)
+    canvas.style.height = cssH + 'px'
     const ctx = canvas.getContext('2d')
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
@@ -486,7 +522,7 @@ function renderPlayerView(playbookId, playerName, outlet, store) {
       showReadNumbers: false,
       showAllRoutes: true,
       highlightPosition: highlightOn ? playerPosition : null,
-      speed: 'full',
+      speed: currentSpeed,
     })
 
     animator.onStateChange(state => {
