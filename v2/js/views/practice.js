@@ -4,6 +4,7 @@
 import { el, clear, showToast } from '../utils/dom.js'
 import { DRILL_LIBRARY, DRILL_CATEGORIES, PRACTICE_TEMPLATES, getDrillById, getDrillsByCategory } from '../drill-library.js'
 import { PLAY_LIBRARY } from '../play-library.js'
+import { renderJukeTutorial } from './juke-tutorial.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main view entry point
@@ -23,6 +24,9 @@ export function practiceView(params, outlet) {
   let showSavedPlans = false
   let showPlaySelector = -1    // Block idx for play linker, -1 = closed
   let showCustomForm = false
+  let showJukeOverlay = false
+  let jukeInitialMoveId = 'cut-juke'
+  let jukeCleanup = null
 
   // Run mode state
   let runBlockIdx = 0
@@ -123,6 +127,20 @@ export function practiceView(params, outlet) {
 
   function render() {
     clear(outlet)
+
+    // Juke overlay takes priority
+    if (showJukeOverlay) {
+      jukeCleanup = renderJukeTutorial(outlet, {
+        initialMoveId: jukeInitialMoveId,
+        onClose: () => {
+          showJukeOverlay = false
+          jukeCleanup = null
+          render()
+        },
+      })
+      return
+    }
+
     if (mode === 'run' && currentPlan) {
       renderRunView()
     } else {
@@ -170,6 +188,22 @@ export function practiceView(params, outlet) {
     } else {
       container.appendChild(renderPlanEditor())
     }
+
+    // Juke Tutorial entry card
+    container.appendChild(el('div', {
+      className: 'card jk-entry-card',
+      onClick: () => {
+        showJukeOverlay = true
+        jukeInitialMoveId = 'cut-juke'
+        render()
+      },
+    }, [
+      el('div', { className: 'jk-entry-icon', textContent: '🏃' }),
+      el('div', {}, [
+        el('div', { className: 'jk-entry-title', textContent: 'Juke Move Tutorials' }),
+        el('div', { className: 'jk-entry-desc', textContent: '6 animated evasion techniques with coaching cues' }),
+      ]),
+    ]))
 
     // Saved plans section
     container.appendChild(renderSavedPlansSection())
@@ -402,6 +436,19 @@ export function practiceView(params, outlet) {
     // Play linker (for play-walkthrough)
     if (drill && drill.linkedPlays) {
       detail.appendChild(renderPlayLinkerInline(block, idx))
+    }
+
+    // Juke tutorial trigger for evasion drills
+    if (drill && drill.jukeRelated && drill.jukeRelated.length > 0) {
+      detail.appendChild(el('button', {
+        className: 'btn btn-sm jk-trigger-btn',
+        textContent: '🏃 View Juke Techniques',
+        onClick: () => {
+          showJukeOverlay = true
+          jukeInitialMoveId = drill.jukeRelated[0]
+          render()
+        },
+      }))
     }
 
     // Move + remove actions
@@ -1084,5 +1131,6 @@ export function practiceView(params, outlet) {
   return () => {
     stopTimer()
     unsubscribe()
+    if (jukeCleanup) jukeCleanup()
   }
 }

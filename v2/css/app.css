@@ -1915,3 +1915,223 @@ select.input {
     font-size: 12px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Juke Move Tutorial — Phase 7
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.jk-overlay {
+  padding: 0;
+}
+
+.jk-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+.jk-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.jk-move-selector {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 8px 0;
+  -webkit-overflow-scrolling: touch;
+}
+.jk-move-btn {
+  background: #0d1b36;
+  color: #e0e0e0;
+  border: 1px solid #0f3460;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 36px;
+  transition: all 0.15s;
+}
+.jk-move-btn.active {
+  background: #e94560;
+  color: #fff;
+  border-color: #e94560;
+}
+
+.jk-canvas-wrap {
+  width: 100%;
+  max-width: 400px;
+  margin: 8px auto;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #0f3460;
+}
+.jk-canvas {
+  display: block;
+  width: 100%;
+}
+
+.jk-step-area {
+  text-align: center;
+  padding: 8px 0;
+}
+.jk-phase-label {
+  font-weight: 700;
+  font-size: 14px;
+  color: #e94560;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.jk-phase-desc {
+  font-size: 12px;
+  color: #888;
+  margin: 2px 0 8px;
+}
+
+.jk-step-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.jk-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #0f3460;
+  background: #0d1b36;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.jk-dot.done {
+  background: #0f3460;
+  color: #e0e0e0;
+  border-color: #3B82F6;
+}
+.jk-dot.current {
+  background: #e94560;
+  color: #fff;
+  border-color: #e94560;
+  transform: scale(1.15);
+}
+
+.jk-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  flex-wrap: wrap;
+}
+.jk-ctrl-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+.jk-play-btn {
+  min-width: 100px;
+}
+.jk-speed-btn {
+  font-size: 12px;
+  min-width: 80px;
+}
+.jk-speed-btn.teach {
+  background: #0f3460;
+}
+.jk-speed-btn.game {
+  background: #f59e0b;
+  color: #000;
+}
+
+.jk-coaching {
+  padding: 8px 0;
+}
+.jk-step-cues {
+  background: #0d1b36;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.jk-cue {
+  font-size: 13px;
+  color: #e0e0e0;
+  padding: 2px 0;
+}
+.jk-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #aaa;
+  border-top: 1px solid #0f346033;
+}
+.jk-cue-list, .jk-mistake-list {
+  padding-left: 20px;
+  margin: 0 0 8px;
+}
+.jk-cue-list li, .jk-mistake-list li {
+  font-size: 13px;
+  color: #ccc;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.jk-mistake-list li {
+  color: #f59e0b;
+}
+
+.jk-entry-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: border-color 0.15s;
+}
+.jk-entry-card:hover {
+  border-color: #e94560;
+}
+.jk-entry-icon {
+  font-size: 32px;
+}
+.jk-entry-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+.jk-entry-desc {
+  font-size: 12px;
+  color: #888;
+}
+
+.jk-trigger-btn {
+  margin-top: 8px;
+  background: #f59e0b22;
+  color: #f59e0b;
+  border: 1px solid #f59e0b44;
+}
+
+@media (max-width: 480px) {
+  .jk-move-selector {
+    gap: 4px;
+  }
+  .jk-move-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .jk-canvas-wrap {
+    max-width: 100%;
+  }
+  .jk-dot {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'playbook-v3'
+const CACHE_NAME = 'playbook-v4'
 
 const APP_SHELL = [
   './',
@@ -18,6 +18,10 @@ const APP_SHELL = [
   './js/views/play-library.js',
   './js/views/play-viewer.js',
   './js/views/player-share.js',
+  './js/views/practice.js',
+  './js/views/juke-tutorial.js',
+  './js/canvas/juke-animator.js',
+  './js/juke-data.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
