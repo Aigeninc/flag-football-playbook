@@ -18,6 +18,7 @@ const DEFAULT_STATE = {
   customDrills: [],
   activePracticePlanId: null,
   practicePrefs: { timerMode: 'timer' },
+  playerPlaybooks: {},  // { playerName: [{ playId, position, replacesPlayer }] }
 }
 
 /**
@@ -38,6 +39,7 @@ export function createStore() {
     customDrills: load('pb_custom_drills', DEFAULT_STATE.customDrills),
     activePracticePlanId: load('pb_active_practice_plan', DEFAULT_STATE.activePracticePlanId),
     practicePrefs: { ...DEFAULT_STATE.practicePrefs, ...load('pb_practice_prefs', {}) },
+    playerPlaybooks: load('pb_player_playbooks', DEFAULT_STATE.playerPlaybooks),
   }
 
   const listeners = new Set()
@@ -86,6 +88,10 @@ export function createStore() {
     if (partial.practicePrefs !== undefined) {
       Object.assign(state.practicePrefs, partial.practicePrefs)
       save('pb_practice_prefs', state.practicePrefs)
+    }
+    if (partial.playerPlaybooks !== undefined) {
+      state.playerPlaybooks = partial.playerPlaybooks
+      save('pb_player_playbooks', state.playerPlaybooks)
     }
     // Notify all subscribers
     for (const fn of listeners) {

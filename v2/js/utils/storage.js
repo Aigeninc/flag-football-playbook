@@ -1,4 +1,4 @@
-const CURRENT_VERSION = 5
+const CURRENT_VERSION = 6
 
 // Default roster — preloaded so coach doesn't have to re-enter every time
 const DEFAULT_ROSTER = [
@@ -78,5 +78,11 @@ export function migrate() {
     if (load('pb_practice_plans') === null) save('pb_practice_plans', [])
     if (load('pb_custom_drills') === null) save('pb_custom_drills', [])
     save('pb_version', 5)
+  }
+
+  if (version < 6) {
+    // v5 → v6: add per-player playbooks
+    if (load('pb_player_playbooks') === null) save('pb_player_playbooks', {})
+    save('pb_version', 6)
   }
 }
