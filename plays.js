@@ -119,7 +119,7 @@ const PLAYS = [
     ballPath: [
       { from: 'Lenox', to: 'Braelyn', time: 0, type: 'snap' },
       { from: 'Braelyn', to: 'Marshall', time: 0.5, type: 'handoff' },
-      { from: 'Marshall', to: 'Greyson', time: 1.5, type: 'lateral' },
+      { from: 'Marshall', to: 'Greyson', time: 0.8, type: 'lateral' },
     ],
     specialLabels: [
       { x: 15, y: -5, text: 'PITCH', color: '#ff6600' },
